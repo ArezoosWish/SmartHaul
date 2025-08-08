@@ -1,0 +1,488 @@
+SmartHaul - Product Requirements Document
+Intelligent Document & Delivery Management System for Logistics
+
+📋 Executive Summary
+SmartHaul is a comprehensive logistics platform that digitalizes paper-based workflows while providing predictive intelligence for delivery operations. The system combines OCR document processing, real-time shipment tracking, predictive analytics, and automated compliance reporting into a unified, cost-effective solution.
+
+🎯 Core Objectives
+
+Eliminate paper-based processes through intelligent document digitization
+Predict and prevent delivery issues using ML-based analytics
+Automate compliance and reporting workflows
+Provide real-time visibility across all shipments
+Enable digital chain of custody with verification and audit trails
+
+
+🏗️ System Architecture Overview
+┌─────────────────────────────────────────────────────────┐
+│                   React Frontend (PWA)                   │
+│                  Responsive Web Application              │
+└────────────────────┬────────────────────────────────────┘
+                     │ REST API / SSE
+┌────────────────────┴────────────────────────────────────┐
+│                Python Backend (FastAPI)                  │
+│         OCR • ML • PDF Generation • Validation          │
+└────────┬──────────────────────────────┬─────────────────┘
+         │                              │
+┌────────┴────────┐            ┌───────┴────────┐
+│   N8N Workflows │            │    Database    │
+│   Automation    │            │  PostgreSQL    │
+└─────────────────┘            └────────────────┘
+
+🚀 Feature Breakdown & Tasks
+Phase 1: Foundation (Week 1)
+Task 1.1: Project Setup & Infrastructure
+Priority: P0 - Critical
+Effort: 4 hours
+Dependencies: None
+Subtasks:
+
+Initialize React project with Vite
+Setup FastAPI backend structure
+Configure PostgreSQL database (local/free tier)
+Setup Git repository with proper .gitignore
+Configure environment variables structure
+Setup N8N instance (Docker or cloud free tier)
+
+Deliverables:
+
+Working development environment
+Basic CI/CD pipeline (GitHub Actions)
+README with setup instructions
+
+
+Task 1.2: Database Schema Design
+Priority: P0 - Critical
+Effort: 3 hours
+Dependencies: Task 1.1
+Tables Required:
+sql- shipments (id, tracking_number, origin, destination, status, created_at, eta, actual_delivery_time)
+- trucks (id, plate_number, current_lat, current_lng, driver_id, status, temperature)
+- documents (id, shipment_id, type, original_url, extracted_data, processed_at, verified)
+- delivery_events (id, shipment_id, event_type, timestamp, location, signature_url, notes)
+- predictions (id, shipment_id, predicted_delay, risk_score, factors, created_at)
+- users (id, email, role, company_id, created_at)
+Deliverables:
+
+SQL migration files
+SQLAlchemy models
+Database seed script with sample data
+
+
+Task 1.3: Authentication System
+Priority: P0 - Critical
+Effort: 4 hours
+Dependencies: Task 1.2
+Subtasks:
+
+JWT implementation in FastAPI
+Login/logout endpoints
+Role-based access (admin, dispatcher, driver)
+Protected route middleware
+React context for auth state
+Login UI component
+
+Deliverables:
+
+Working auth flow
+Protected API endpoints
+Persistent sessions
+
+
+Phase 2: Core Document Processing (Week 1-2)
+Task 2.1: OCR Engine Integration
+Priority: P0 - Critical
+Effort: 6 hours
+Dependencies: Task 1.3
+Subtasks:
+
+Install and configure Tesseract
+Create Python service for image preprocessing
+Implement text extraction pipeline
+Add support for PDF documents
+Create data parsing rules for common documents:
+
+Bill of Lading
+Delivery receipts
+Customs forms
+Weight tickets
+
+
+
+Deliverables:
+
+OCR service class
+API endpoint: POST /api/documents/extract
+Error handling for poor quality images
+
+
+Task 2.2: Document Upload Interface
+Priority: P0 - Critical
+Effort: 5 hours
+Dependencies: Task 2.1
+React Components Needed:
+jsx- <DocumentUploader /> - Drag & drop or click to upload
+- <CameraCapture /> - Mobile camera integration
+- <DocumentPreview /> - Show uploaded image/PDF
+- <ExtractionResults /> - Display OCR results with edit capability
+- <DocumentVerification /> - Confirm and save extracted data
+Features:
+
+Multiple file upload
+Progress indicators
+Image quality validation
+Manual correction interface
+Auto-save drafts
+
+
+Task 2.3: N8N Document Workflow
+Priority: P1 - High
+Effort: 4 hours
+Dependencies: Task 2.1, 2.2
+Workflow Steps:
+
+Webhook trigger on document upload
+Call OCR processing
+Validate extracted data against shipment
+Check for missing required fields
+Send notifications if issues found
+Update shipment status
+Generate audit log entry
+
+Deliverables:
+
+N8N workflow template
+Webhook endpoints
+Error handling flows
+
+
+Phase 3: Delivery Intelligence System (Week 2)
+Task 3.1: ML Model Development
+Priority: P0 - Critical
+Effort: 8 hours
+Dependencies: Task 1.2
+Model Features:
+pythonFeatures to consider:
+- Historical delivery times for route
+- Current traffic conditions (simulated)
+- Weather data (simulated)
+- Driver performance history
+- Time of day/week patterns
+- Distance remaining
+- Number of stops remaining
+- Current delay (if any)
+- Cargo type (priority level)
+Subtasks:
+
+Generate synthetic training data
+Feature engineering pipeline
+Train random forest/gradient boosting model
+Model evaluation metrics
+API endpoint for predictions
+Scheduled retraining system
+
+Deliverables:
+
+Trained model (pickle file)
+Prediction API: POST /api/predictions/delivery
+Model performance dashboard
+
+
+Task 3.2: Real-time Tracking System
+Priority: P0 - Critical
+Effort: 6 hours
+Dependencies: Task 3.1
+Subtasks:
+
+Simulate GPS data updates
+Server-Sent Events (SSE) implementation
+Temperature monitoring simulation
+Geofencing for delivery zones
+Route deviation detection
+
+React Components:
+jsx- <LiveMap /> - Real-time truck positions
+- <RouteVisualizer /> - Planned vs actual route
+- <TruckStatusCard /> - Speed, temp, driver info
+- <DeliveryTimeline /> - Stop-by-stop progress
+
+Task 3.3: Alert System
+Priority: P1 - High
+Effort: 5 hours
+Dependencies: Task 3.2
+Alert Types:
+
+Temperature threshold breach
+Predicted delay > 30 minutes
+Route deviation > 5 miles
+Document missing for delivery
+Delivery time window at risk
+
+N8N Automation:
+
+Email notifications
+SMS alerts (simulated)
+Dashboard notifications
+Escalation rules
+Alert acknowledgment tracking
+
+
+Phase 4: Digital Chain of Custody (Week 2-3)
+Task 4.1: QR Code System
+Priority: P1 - High
+Effort: 4 hours
+Dependencies: Task 1.3
+Features:
+
+Generate unique QR per shipment
+QR scanner component
+Encode shipment + security token
+Mobile-optimized scanning interface
+Offline capability with sync
+
+Deliverables:
+
+QR generation API
+Scanner React component
+Verification endpoint
+
+
+Task 4.2: Digital Signature Capture
+Priority: P1 - High
+Effort: 3 hours
+Dependencies: Task 4.1
+React Components:
+jsx- <SignaturePad /> - Touch/mouse drawing
+- <SignatureVerification /> - Compare signatures
+- <DeliveryConfirmation /> - Complete handoff form
+Features:
+
+Timestamp + GPS stamping
+Multiple signature support (sender/receiver)
+Signature image storage
+Legal compliance formatting
+
+
+Task 4.3: PDF Generation Service
+Priority: P1 - High
+Effort: 4 hours
+Dependencies: Task 4.2
+Document Types:
+
+Delivery confirmation
+Exception reports
+Compliance summaries
+Chain of custody reports
+
+Features:
+
+Template engine
+Dynamic data insertion
+Signature embedding
+Barcode/QR inclusion
+Email delivery option
+
+
+Phase 5: Analytics Dashboard (Week 3)
+Task 5.1: KPI Dashboard
+Priority: P2 - Medium
+Effort: 6 hours
+Dependencies: Tasks 3.1, 3.2
+Metrics to Display:
+
+On-time delivery rate
+Average delay by route
+Temperature compliance %
+Document processing time
+Predictions accuracy
+Active shipments map
+Driver performance rankings
+
+React Components:
+jsx- <MetricCard /> - Single KPI display
+- <TrendChart /> - Time series visualization
+- <HeatMap /> - Geographic delay patterns
+- <PerformanceTable /> - Sortable data grid
+- <DateRangePicker /> - Filter controls
+
+Task 5.2: Report Generation
+Priority: P2 - Medium
+Effort: 4 hours
+Dependencies: Task 5.1
+Report Types:
+
+Daily operations summary
+Weekly performance report
+Monthly compliance audit
+Custom date range reports
+
+N8N Scheduling:
+
+Automated morning reports
+End-of-week summaries
+Alert digest emails
+
+
+Phase 6: Advanced Features (Week 3-4)
+Task 6.1: Route Optimization
+Priority: P3 - Nice to have
+Effort: 6 hours
+Dependencies: Task 3.1
+Features:
+
+Multi-stop optimization
+Load consolidation suggestions
+Fuel efficiency routing
+Time window constraints
+
+
+Task 6.2: Customer Portal
+Priority: P3 - Nice to have
+Effort: 5 hours
+Dependencies: Task 5.1
+Features:
+
+Public tracking page
+Delivery notifications
+Document access
+Feedback system
+
+
+🎨 Frontend Architecture Thoughts
+Design System Philosophy
+I recommend a modern, data-dense, professional approach that balances information density with usability:
+Visual Design
+Color Palette:
+- Primary: Deep Blue (#1e40af) - Trust, reliability
+- Secondary: Emerald (#10b981) - Success, on-time
+- Warning: Amber (#f59e0b) - Delays, attention needed
+- Danger: Red (#ef4444) - Critical issues
+- Neutral: Slate grays - Professional, clean
+
+Typography:
+- Headers: Inter or Poppins (modern, clean)
+- Body: System fonts (fast loading)
+- Monospace: For tracking numbers, codes
+Component Architecture
+src/
+├── components/
+│   ├── common/
+│   │   ├── Layout/
+│   │   ├── Navigation/
+│   │   └── LoadingStates/
+│   ├── documents/
+│   │   ├── DocumentUploader/
+│   │   ├── OCRResults/
+│   │   └── DocumentList/
+│   ├── tracking/
+│   │   ├── LiveMap/
+│   │   ├── TruckCard/
+│   │   └── RouteTimeline/
+│   ├── predictions/
+│   │   ├── DelayPredictor/
+│   │   ├── RiskIndicator/
+│   │   └── AlertBanner/
+│   └── analytics/
+│       ├── KPIGrid/
+│       ├── Charts/
+│       └── Reports/
+├── hooks/
+│   ├── useWebSocket.js
+│   ├── useGeolocation.js
+│   └── useOCR.js
+├── contexts/
+│   ├── AuthContext.jsx
+│   ├── ShipmentContext.jsx
+│   └── NotificationContext.jsx
+└── services/
+    ├── api.js
+    ├── predictions.js
+    └── documents.js
+Key UI/UX Decisions
+
+Dashboard Layout
+
+Left sidebar navigation (collapsible)
+Main content area with breadcrumbs
+Right panel for details/actions (slideout)
+Persistent header with search and notifications
+
+
+Mobile-First Responsive Design
+Desktop: Full dashboard with all panels
+Tablet: Collapsed sidebar, full content
+Mobile: Bottom navigation, stacked cards
+
+Real-time Updates
+
+Subtle animations for new data
+Toast notifications for alerts
+Skeleton loaders during fetches
+Optimistic UI updates
+
+
+Data Visualization
+
+Leaflet for maps (free, performant)
+Recharts for charts (consistent, React-friendly)
+Custom SVG for specialized visualizations
+
+
+Performance Optimizations
+
+React.lazy() for code splitting
+Virtual scrolling for long lists
+Debounced search inputs
+Image lazy loading
+PWA with offline support
+
+
+
+State Management
+javascript// Keep it simple initially
+- React Context for global state (auth, notifications)
+- Local state for component-specific data
+- React Query for server state (caching, sync)
+- Consider Zustand if complexity grows
+Key Interactions
+
+Drag & Drop - For document upload
+Swipe Gestures - Mobile navigation
+Keyboard Shortcuts - Power user features
+Bulk Actions - Select multiple shipments
+Quick Actions - Right-click context menus
+
+
+📊 Success Metrics
+
+Technical: <2s page load, 99% uptime, <100ms API response
+Business: 80% reduction in paper processing time
+User: 90% task completion rate, <3 clicks to any feature
+
+
+🚧 Technical Constraints
+
+Budget: ~$10/month maximum
+No native mobile apps
+Must work offline (basic features)
+Support 100+ concurrent users
+Data retention: 90 days
+
+
+🎯 MVP Definition (2-Week Sprint)
+Must Have:
+
+Document OCR upload and processing
+Basic delivery tracking map
+Simple delay prediction
+Digital signature capture
+One N8N automated workflow
+Basic analytics dashboard
+
+Demo Scenario Success Criteria:
+
+Process a delivery document in <10 seconds
+Show real-time truck movement
+Predict and alert on delivery delay
+Generate PDF confirmation
+All within a single, cohesive interface
