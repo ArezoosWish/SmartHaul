@@ -21,7 +21,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT * FROM shipments WHERE status = 'in_transit' AND eta > NOW()",
+        "query": "SELECT * FROM shipments WHERE status = 'in_transit' AND eta IS NOT NULL",
         "additionalFields": {}
       },
       "id": "get-active-shipments",
@@ -29,6 +29,35 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 1,
       "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "shipmentData",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-shipment-data",
+      "name": "Set Shipment Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [560, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-in-batches",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [620, 300]
     },
     {
       "parameters": {
@@ -41,7 +70,7 @@
           "conditions": [
             {
               "id": "condition1",
-              "leftValue": "={{ $json.length }}",
+              "leftValue": "={{ $json.shipmentData.length }}",
               "rightValue": 0,
               "operator": {
                 "type": "number",
@@ -62,7 +91,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE shipments SET eta = eta + INTERVAL '2 hours' WHERE id = {{ $json.id }}",
+        "query": "UPDATE shipments SET eta = eta + INTERVAL '2 hours' WHERE id = {{ $json.shipmentData.id }}",
         "additionalFields": {}
       },
       "id": "update-eta-delay",
@@ -74,7 +103,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO delivery_events (shipment_id, event_type, location, notes) VALUES ({{ $json.id }}, 'weather_delay', '{{ $json.destination }}', 'Weather delay: Automatic delay applied')",
+        "query": "INSERT INTO delivery_events (shipment_id, event_type, location, notes) VALUES ({{ $json.shipmentData.id }}, 'weather_delay', '{{ $json.shipmentData.destination }}', 'Weather delay: Automatic delay applied')",
         "additionalFields": {}
       },
       "id": "create-weather-event",
@@ -86,7 +115,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO predictions (shipment_id, predicted_delay, risk_score, factors) VALUES ({{ $json.id }}, 120, 0.7, '{\"weather\": \"unknown\", \"description\": \"Automatic delay applied\"}')",
+        "query": "INSERT INTO predictions (shipment_id, predicted_delay, risk_score, factors) VALUES ({{ $json.shipmentData.id }}, 120, 0.7, '{\"weather\": \"unknown\", \"description\": \"Automatic delay applied\"}')",
         "additionalFields": {}
       },
       "id": "create-weather-prediction",
@@ -97,8 +126,18 @@
     },
     {
       "parameters": {
+        "options": {}
+      },
+      "id": "error-trigger",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [1200, 400]
+    },
+    {
+      "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE predictions SET predicted_delay = 0, risk_score = 0.1, factors = '{\"weather\": \"clear\", \"status\": \"on_time\"}' WHERE shipment_id = {{ $json.id }}",
+        "query": "UPDATE predictions SET predicted_delay = 0, risk_score = 0.1, factors = '{\"weather\": \"clear\", \"status\": \"on_time\"}' WHERE shipment_id = {{ $json.shipmentData.id }}",
         "additionalFields": {}
       },
       "id": "update-prediction-clear",
@@ -118,6 +157,22 @@
       ]
     },
     "Get Active Shipments": {
+      "main": [
+        [
+          "Set Shipment Data",
+          0
+        ]
+      ]
+    },
+    "Set Shipment Data": {
+      "main": [
+        [
+          "Split In Batches",
+          0
+        ]
+      ]
+    },
+    "Split In Batches": {
       "main": [
         [
           "Check If Shipments Exist",
