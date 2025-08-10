@@ -29,7 +29,13 @@ class Settings(BaseSettings):
     log_file: str = "./logs/smarthaul.log"
     
     # CORS
-    cors_origins: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    cors_origins: List[str] = [
+        "http://localhost:3000", 
+        "http://localhost:5173", 
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174"
+    ]
     
     class Config:
         env_file = ".env"

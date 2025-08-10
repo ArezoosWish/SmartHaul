@@ -5,13 +5,16 @@ services:
     container_name: smarthaul-n8n
     restart: unless-stopped
     ports:
-      - "5679:5678"
+      - "5679:5679"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
       - N8N_BASIC_AUTH_PASSWORD=smarthaul123
+      - N8N_EMAIL=admin@smarthaul.com
       - N8N_HOST=localhost
-      - N8N_PORT=5678
+      - N8N_PORT=5679
       - N8N_PROTOCOL=http
       - N8N_USER_MANAGEMENT_DISABLED=false
       - N8N_DIAGNOSTICS_ENABLED=false
@@ -23,8 +26,6 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
       - ./n8n-workflows:/home/node/.n8n/workflows
-    networks:
-      - smarthaul-network
     depends_on:
       - postgres
 
@@ -44,8 +45,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-n8n-db.sql:/docker-entrypoint-initdb.d/init-n8n-db.sql
-    networks:
-      - smarthaul-network
 
   # Redis (for N8N queue management)
   redis:
@@ -56,8 +55,6 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    networks:
-      - smarthaul-network
 
 volumes:
   n8n_data:
@@ -65,8 +62,4 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
-    driver: local
-
-networks:
-  smarthaul-network:
-    driver: bridge 
+    driver: local 
