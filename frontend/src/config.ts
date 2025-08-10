@@ -4,7 +4,7 @@ export const config = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
   
   // N8N Configuration
-  n8nBaseUrl: import.meta.env.VITE_N8N_BASE_URL || 'http://localhost:5679',
+  n8nBaseUrl: import.meta.env.VITE_N8N_BASE_URL || 'http://localhost:5678',
   
   // App Configuration
   appName: import.meta.env.VITE_APP_NAME || 'SmartHaul',

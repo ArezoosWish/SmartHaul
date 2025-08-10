@@ -37,7 +37,7 @@ cp env.example .env
 3. **Start N8N Services** (Required for workflow automation)
 ```bash
 ./scripts/start-n8n.sh
-# Access N8N at: http://localhost:5679 (admin/smarthaul123)
+# Access N8N at: http://localhost:5678 (admin/smarthaul123)
 ```
 
 4. **Start services**
@@ -70,8 +70,8 @@ N8N workflows are embedded directly into the SmartHaul UI:
 - **Seamless Integration**: Direct communication between SmartHaul and N8N
 
 ### N8N Services
-- **Workflow Editor**: http://localhost:5679
-- **API Endpoints**: http://localhost:5679/api/v1
+- **Workflow Editor**: http://localhost:5678
+- **API Endpoints**: http://localhost:5678/api/v1
 - **Default Credentials**: admin / smarthaul123
 
 ## 📁 Project Structure
