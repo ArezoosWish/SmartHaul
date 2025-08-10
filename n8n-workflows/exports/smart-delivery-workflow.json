@@ -1,0 +1,173 @@
+{
+  "name": "SmartHaul Delivery Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "id": "scheduler-node",
+      "name": "Check Shipments Every 30 Min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM shipments WHERE status = 'in_transit' AND eta > NOW()",
+        "additionalFields": {}
+      },
+      "id": "get-active-shipments",
+      "name": "Get Active Shipments",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $json.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-if-shipments-exist",
+      "name": "Check If Shipments Exist",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE shipments SET eta = eta + INTERVAL '2 hours' WHERE id = {{ $json.id }}",
+        "additionalFields": {}
+      },
+      "id": "update-eta-delay",
+      "name": "Update ETA (Add 2 Hours)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO delivery_events (shipment_id, event_type, location, notes) VALUES ({{ $json.id }}, 'weather_delay', '{{ $json.destination }}', 'Weather delay: Automatic delay applied')",
+        "additionalFields": {}
+      },
+      "id": "create-weather-event",
+      "name": "Create Weather Delay Event",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO predictions (shipment_id, predicted_delay, risk_score, factors) VALUES ({{ $json.id }}, 120, 0.7, '{\"weather\": \"unknown\", \"description\": \"Automatic delay applied\"}')",
+        "additionalFields": {}
+      },
+      "id": "create-weather-prediction",
+      "name": "Create Weather Prediction",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE predictions SET predicted_delay = 0, risk_score = 0.1, factors = '{\"weather\": \"clear\", \"status\": \"on_time\"}' WHERE shipment_id = {{ $json.id }}",
+        "additionalFields": {}
+      },
+      "id": "update-prediction-clear",
+      "name": "Update Prediction (Clear Weather)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [900, 400]
+    }
+  ],
+  "connections": {
+    "Check Shipments Every 30 Min": {
+      "main": [
+        [
+          "Get Active Shipments",
+          0
+        ]
+      ]
+    },
+    "Get Active Shipments": {
+      "main": [
+        [
+          "Check If Shipments Exist",
+          0
+        ]
+      ]
+    },
+    "Check If Shipments Exist": {
+      "main": [
+        [
+          "Update ETA (Add 2 Hours)",
+          0
+        ],
+        [
+          "Update Prediction (Clear Weather)",
+          0
+        ]
+      ]
+    },
+    "Update ETA (Add 2 Hours)": {
+      "main": [
+        [
+          "Create Weather Delay Event",
+          0
+        ]
+      ]
+    },
+    "Create Weather Delay Event": {
+      "main": [
+        [
+          "Create Weather Prediction",
+          0
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-08-08T12:00:00.000Z",
+      "updatedAt": "2025-08-08T12:00:00.000Z",
+      "id": "smart-haul",
+      "name": "SmartHaul"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-08-08T12:00:00.000Z",
+  "versionId": "1"
+} 

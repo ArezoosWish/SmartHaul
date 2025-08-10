@@ -1,0 +1,261 @@
+{
+  "name": "SmartHaul Test Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test-shipment",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-node",
+      "name": "Webhook - Test Shipment",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "test-shipment-webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM shipments WHERE tracking_number = $1",
+        "additionalFields": {
+          "queryReplacement": "SELECT * FROM shipments WHERE tracking_number = $1"
+        }
+      },
+      "id": "db-query-node",
+      "name": "Query Shipment",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [460, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-credentials",
+          "name": "SmartHaul PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-node",
+      "name": "Shipment Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO delivery_events (shipment_id, event_type, location, notes) VALUES ($1, $2, $3, $4) RETURNING *",
+        "additionalFields": {
+          "queryReplacement": "INSERT INTO delivery_events (shipment_id, event_type, location, notes) VALUES ($1, $2, $3, $4) RETURNING *"
+        }
+      },
+      "id": "insert-event-node",
+      "name": "Create Delivery Event",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [900, 200],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-credentials",
+          "name": "SmartHaul PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE shipments SET status = $1 WHERE id = $2 RETURNING *",
+        "additionalFields": {
+          "queryReplacement": "UPDATE shipments SET status = $1 WHERE id = $2 RETURNING *"
+        }
+      },
+      "id": "update-shipment-node",
+      "name": "Update Shipment Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1120, 200],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-credentials",
+          "name": "SmartHaul PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"Shipment updated successfully\",\n  \"shipment\": {{ $json }},\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"message\": \"Shipment not found\",\n  \"tracking_number\": \"{{ $('Webhook - Test Shipment').item.json.tracking_number }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT s.tracking_number, s.status, s.origin, s.destination, COUNT(de.id) as event_count FROM shipments s LEFT JOIN delivery_events de ON s.id = de.shipment_id GROUP BY s.id, s.tracking_number, s.status, s.origin, s.destination ORDER BY s.created_at DESC LIMIT 10",
+        "additionalFields": {
+          "queryReplacement": "SELECT s.tracking_number, s.status, s.origin, s.destination, COUNT(de.id) as event_count FROM shipments s LEFT JOIN delivery_events de ON s.id = de.shipment_id GROUP BY s.id, s.tracking_number, s.status, s.origin, s.destination ORDER BY s.created_at DESC LIMIT 10"
+        }
+      },
+      "id": "dashboard-query",
+      "name": "Get Dashboard Data",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [460, 500],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-credentials",
+          "name": "SmartHaul PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"dashboard_data\": {{ $json }},\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "id": "dashboard-response",
+      "name": "Dashboard Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 500]
+    }
+  ],
+  "connections": {
+    "Webhook - Test Shipment": {
+      "main": [
+        [
+          {
+            "node": "Query Shipment",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Dashboard Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Shipment": {
+      "main": [
+        [
+          {
+            "node": "Shipment Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shipment Found?": {
+      "main": [
+        [
+          {
+            "node": "Create Delivery Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Delivery Event": {
+      "main": [
+        [
+          {
+            "node": "Update Shipment Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Shipment Status": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Dashboard Data": {
+      "main": [
+        [
+          {
+            "node": "Dashboard Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "smarthaul-test-workflow",
+  "tags": [
+    {
+      "createdAt": "2025-08-08T10:30:00.000Z",
+      "updatedAt": "2025-08-08T10:30:00.000Z",
+      "id": "smarthaul",
+      "name": "SmartHaul"
+    }
+  ]
+} 
