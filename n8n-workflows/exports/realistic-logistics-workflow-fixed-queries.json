@@ -1,0 +1,430 @@
+{
+  "name": "SmartHaul Realistic Logistics Automation - FIXED QUERIES",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "scheduler-node",
+      "name": "Monitor Every 15 Min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM shipments WHERE status = 'in_transit' AND eta < NOW()",
+        "additionalFields": {}
+      },
+      "id": "get-delayed-shipments",
+      "name": "Get Delayed Shipments (FIXED)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [460, 180],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM trucks WHERE status = 'maintenance'",
+        "additionalFields": {}
+      },
+      "id": "get-maintenance-trucks",
+      "name": "Get Maintenance Trucks",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM shipments WHERE status = 'in_transit' AND eta < NOW() + INTERVAL '1 hour'",
+        "additionalFields": {}
+      },
+      "id": "get-urgent-shipments",
+      "name": "Get Urgent Shipments (FIXED)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [460, 420],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) as total_shipments, COUNT(CASE WHEN status = 'delivered' THEN 1 END) as delivered, COUNT(CASE WHEN status = 'in_transit' THEN 1 END) as in_transit, COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending FROM shipments",
+        "additionalFields": {}
+      },
+      "id": "generate-daily-statistics",
+      "name": "Generate Daily Statistics",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [460, 540],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ `UPDATE shipments SET eta = eta + INTERVAL '1 hour' WHERE id = ${Number($json.id)} RETURNING id, eta` }}",
+        "additionalFields": {}
+      },
+      "id": "update-delayed-eta",
+      "name": "Update Delayed ETA (Expression)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [900, 180],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ `INSERT INTO delivery_events (shipment_id, event_type, location, notes) VALUES (${Number($json.id)}, 'delay_alert', '${String($json.destination).replace(/'/g, \"''\")}', 'Delivery delayed: ETA updated due to traffic/weather')` }}",
+        "additionalFields": {}
+      },
+      "id": "create-delay-event",
+      "name": "Create Delay Event (Expression)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1120, 180],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/notifications/delay",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "jsonParameters": true,
+        "options": { "bodyContentType": "json" },
+        "body": "={{ ({ type: 'delay_alert', shipment_id: $('Get Delayed Shipments (FIXED)').item.json.id, message: `Shipment ${$('Get Delayed Shipments (FIXED)').item.json.tracking_number} delayed. New ETA: ${$('Update Delayed ETA (Expression)').item.json.eta}`, timestamp: new Date().toISOString() }) }}"
+      },
+      "id": "notify-frontend-delay",
+      "name": "Notify Frontend - Delay",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1340, 180]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ `UPDATE predictions SET predicted_delay = predicted_delay + 60, risk_score = LEAST(risk_score + 0.2, 1.0) WHERE shipment_id = ${Number($json.id)}` }}",
+        "additionalFields": {}
+      },
+      "id": "update-delay-prediction",
+      "name": "Update Delay Prediction (Expression)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1560, 180],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ `UPDATE shipments SET status = 'pending', eta = eta + INTERVAL '4 hours' WHERE truck_id = ${Number($json.id)}` }}",
+        "additionalFields": {}
+      },
+      "id": "reassign-maintenance-shipments",
+      "name": "Reassign Maintenance Shipments (Expression)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [900, 300],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ `INSERT INTO delivery_events (shipment_id, event_type, location, notes) VALUES (5, 'truck_maintenance', 'System', 'Shipment reassigned due to truck maintenance - Truck ID: ${Number($json.id)}')` }}",
+        "additionalFields": {}
+      },
+      "id": "create-maintenance-event",
+      "name": "Create Maintenance Event (Expression)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/notifications/maintenance",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "jsonParameters": true,
+        "options": { "bodyContentType": "json" },
+        "body": "={{ ({ type: 'truck_maintenance', truck_id: $('Get Maintenance Trucks').item.json.id, message: `Truck ${$('Get Maintenance Trucks').item.json.plate_number} needs maintenance. Shipments reassigned.`, timestamp: new Date().toISOString() }) }}"
+      },
+      "id": "notify-frontend-maintenance",
+      "name": "Notify Frontend - Maintenance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ `INSERT INTO delivery_events (shipment_id, event_type, location, notes) VALUES (${Number($json.id)}, 'urgent_alert', '${String($json.destination).replace(/'/g, \"''\")}', 'URGENT: Delivery within 30 minutes')` }}",
+        "additionalFields": {}
+      },
+      "id": "create-urgent-event",
+      "name": "Create Urgent Event (Expression)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [900, 420],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/notifications/urgent",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "jsonParameters": true,
+        "options": { "bodyContentType": "json" },
+        "body": "={{ ({ type: 'urgent_alert', shipment_id: $('Get Urgent Shipments (FIXED)').item.json.id, message: `URGENT: Shipment ${$('Get Urgent Shipments (FIXED)').item.json.tracking_number} arriving in 30 minutes!`, timestamp: new Date().toISOString() }) }}"
+      },
+      "id": "notify-frontend-urgent",
+      "name": "Notify Frontend - Urgent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1120, 420]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ `UPDATE predictions SET risk_score = LEAST(risk_score + 0.3, 1.0) WHERE shipment_id = ${Number($json.id)}` }}",
+        "additionalFields": {}
+      },
+      "id": "update-urgent-prediction",
+      "name": "Update Urgent Prediction (Expression)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1340, 420],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ `INSERT INTO delivery_events (shipment_id, event_type, location, notes) VALUES (1, 'daily_report', 'System', 'Daily Statistics: Total: ${Number($json.total_shipments)}, Delivered: ${Number($json.delivered)}, In Transit: ${Number($json.in_transit)}, Pending: ${Number($json.pending)}')` }}",
+        "additionalFields": {}
+      },
+      "id": "create-daily-report",
+      "name": "Create Daily Report (Expression)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [900, 540],
+      "credentials": {
+        "postgres": {
+          "id": "smarthaul-db-credential",
+          "name": "SmartHaul Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/notifications/daily-report",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "jsonParameters": true,
+        "options": { "bodyContentType": "json" },
+        "body": "={{ (() => { const s = $('Generate Daily Statistics').item.json; return ({ type: 'daily_report', statistics: s, message: `Daily Report: ${s.total_shipments} total shipments, ${s.delivered} delivered, ${s.in_transit} in transit`, timestamp: new Date().toISOString() }) })() }}"
+      },
+      "id": "notify-frontend-daily",
+      "name": "Notify Frontend - Daily Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1120, 540]
+    }
+  ],
+  "connections": {
+    "Monitor Every 15 Min": {
+      "main": [
+        [
+          { "node": "Get Delayed Shipments (FIXED)", "type": "main", "index": 0 },
+          { "node": "Get Maintenance Trucks", "type": "main", "index": 0 },
+          { "node": "Get Urgent Shipments (FIXED)", "type": "main", "index": 0 },
+          { "node": "Generate Daily Statistics", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Get Delayed Shipments (FIXED)": {
+      "main": [
+        [
+          { "node": "Update Delayed ETA (Expression)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Update Delayed ETA (Expression)": {
+      "main": [
+        [
+          { "node": "Create Delay Event (Expression)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Create Delay Event (Expression)": {
+      "main": [
+        [
+          { "node": "Notify Frontend - Delay", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Notify Frontend - Delay": {
+      "main": [
+        [
+          { "node": "Update Delay Prediction (Expression)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Get Maintenance Trucks": {
+      "main": [
+        [
+          { "node": "Reassign Maintenance Shipments (Expression)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Reassign Maintenance Shipments (Expression)": {
+      "main": [
+        [
+          { "node": "Create Maintenance Event (Expression)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Create Maintenance Event (Expression)": {
+      "main": [
+        [
+          { "node": "Notify Frontend - Maintenance", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Get Urgent Shipments (FIXED)": {
+      "main": [
+        [
+          { "node": "Create Urgent Event (Expression)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Create Urgent Event (Expression)": {
+      "main": [
+        [
+          { "node": "Notify Frontend - Urgent", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Notify Frontend - Urgent": {
+      "main": [
+        [
+          { "node": "Update Urgent Prediction (Expression)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Generate Daily Statistics": {
+      "main": [
+        [
+          { "node": "Create Daily Report (Expression)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Create Daily Report (Expression)": {
+      "main": [
+        [
+          { "node": "Notify Frontend - Daily Report", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2024-01-15T10:00:00.000Z",
+      "updatedAt": "2025-08-19T10:00:00.000Z",
+      "id": "smarthaul-logistics",
+      "name": "SmartHaul Logistics"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-08-19T10:00:00.000Z",
+  "versionId": "9.0"
+}

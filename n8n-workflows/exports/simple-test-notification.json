@@ -1,0 +1,67 @@
+{
+  "name": "Simple Test Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "scheduler-node",
+      "name": "Test Every Minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/notifications/delay",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "jsonParameters": true,
+        "options": { "bodyContentType": "json" },
+        "body": "={{ ({ type: 'delay_alert', shipment_id: 1, message: 'Test notification from N8N - ' + new Date().toISOString(), timestamp: new Date().toISOString() }) }}"
+      },
+      "id": "test-notification",
+      "name": "Test Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [460, 300]
+    }
+  ],
+  "connections": {
+    "Test Every Minute": {
+      "main": [
+        [
+          { "node": "Test Notification", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-08-19T10:00:00.000Z",
+      "updatedAt": "2025-08-19T10:00:00.000Z",
+      "id": "test-notification",
+      "name": "Test Notification"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-08-19T10:00:00.000Z",
+  "versionId": "1.0"
+}

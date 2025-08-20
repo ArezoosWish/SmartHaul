@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import { WorkflowDashboard } from './components/WorkflowDashboard'
 import PerformanceDashboard from './components/PerformanceDashboard'
+import NotificationPanel from './components/NotificationPanel'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'workflows' | 'performance'>('dashboard')
@@ -179,6 +180,15 @@ function App() {
                   <strong>Overall:</strong> ✅ All systems operational
                 </p>
               </div>
+            </div>
+            
+            {/* Real-time Notifications Panel */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: 'var(--space-6)'
+            }}>
+              <NotificationPanel />
             </div>
 
             <div style={{ 

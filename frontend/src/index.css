@@ -1,4 +1,4 @@
-@import '../design-system/tokens.css';
+@import '../../design-system/tokens.css';
 
 /* Base typography using design system tokens */
 :root {

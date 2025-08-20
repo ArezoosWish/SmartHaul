@@ -23,11 +23,36 @@ services:
       - WEBHOOK_URL=http://localhost:5679/
       - GENERIC_TIMEZONE=UTC
       - N8N_ENCRYPTION_KEY=your-encryption-key-change-in-production
+      # SmartHaul Database Connection
+      - N8N_SMART_HAUL_DB_HOST=smarthaul-database
+      - N8N_SMART_HAUL_DB_PORT=5432
+      - N8N_SMART_HAUL_DB_NAME=smarthaul
+      - N8N_SMART_HAUL_DB_USER=wishsol
+      - N8N_SMART_HAUL_DB_PASSWORD=smarthaul_password
     volumes:
       - n8n_data:/home/node/.n8n
       - ./n8n-workflows:/home/node/.n8n/workflows
     depends_on:
       - postgres
+    networks:
+      - smarthaul-network
+
+  # SmartHaul PostgreSQL Database
+  smarthaul-db:
+    image: postgres:15
+    container_name: smarthaul-database
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=smarthaul
+      - POSTGRES_USER=wishsol
+      - POSTGRES_PASSWORD=smarthaul_password
+    ports:
+      - "5434:5432"  # Different port to avoid conflict with local PostgreSQL
+    volumes:
+      - smarthaul_data:/var/lib/postgresql/data
+      - ./backend/init-smarthaul-db.sql:/docker-entrypoint-initdb.d/init-smarthaul-db.sql
+    networks:
+      - smarthaul-network
 
   # PostgreSQL Database (for N8N metadata)
   postgres:
@@ -45,6 +70,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-n8n-db.sql:/docker-entrypoint-initdb.d/init-n8n-db.sql
+    networks:
+      - smarthaul-network
 
   # Redis (for N8N queue management)
   redis:
@@ -55,11 +82,19 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - smarthaul-network
+
+networks:
+  smarthaul-network:
+    driver: bridge
 
 volumes:
   n8n_data:
     driver: local
   postgres_data:
+    driver: local
+  smarthaul_data:
     driver: local
   redis_data:
     driver: local 
