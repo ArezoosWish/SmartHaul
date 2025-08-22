@@ -6,9 +6,10 @@ import SystemAdministrative from './components/SystemAdministrative'
 import NotificationPanel from './components/NotificationPanel'
 import DashboardCharts from './components/DashboardCharts'
 import FleetDashboard from './components/FleetDashboard'
+import ShipmentDashboard from './components/ShipmentDashboard'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflows' | 'system-admin' | 'fleet'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflows' | 'system-admin' | 'fleet' | 'shipments'>('dashboard')
 
   return (
     <div style={{ 
@@ -100,6 +101,23 @@ function App() {
             Fleet Management
           </button>
           
+          <button
+            onClick={() => setActiveTab('shipments')}
+            style={{
+              background: activeTab === 'shipments' ? 'var(--color-primary)' : 'transparent',
+              color: activeTab === 'shipments' ? 'var(--color-on-primary)' : 'var(--color-text)',
+              padding: 'var(--space-2) var(--space-3)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--color-border)',
+              cursor: 'pointer',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--weight-medium)',
+              transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+            }}
+          >
+            Shipments
+          </button>
+          
           {/* Notifications in top bar */}
           <div style={{ marginLeft: 'auto' }}>
             <NotificationPanel />
@@ -140,6 +158,8 @@ function App() {
           <WorkflowDashboard />
         ) : activeTab === 'fleet' ? (
           <FleetDashboard />
+        ) : activeTab === 'shipments' ? (
+          <ShipmentDashboard />
         ) : (
           <SystemAdministrative />
         )}

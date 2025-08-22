@@ -6,7 +6,7 @@ from .core.config import settings
 from .core.performance import PerformanceMiddleware
 from .models.base import get_db
 from .models.tables import Shipment, DeliveryEvent, Truck, User, Document, Prediction
-from .api import performance, notifications, fleet
+from .api import performance, notifications, fleet, shipments
 
 app = FastAPI(
     title="SmartHaul API",
@@ -36,6 +36,9 @@ app.include_router(notifications.router, prefix="/api/notifications", tags=["not
 
 # Include fleet management routes
 app.include_router(fleet.router, prefix="/api/fleet", tags=["fleet"])
+
+# Include shipment management routes
+app.include_router(shipments.router, prefix="/api/shipments", tags=["shipments"])
 
 @app.get("/")
 async def root():
