@@ -2,10 +2,12 @@ import { useState } from 'react'
 import './App.css'
 import { WorkflowDashboard } from './components/WorkflowDashboard'
 import PerformanceDashboard from './components/PerformanceDashboard'
+import SystemAdministrative from './components/SystemAdministrative'
 import NotificationPanel from './components/NotificationPanel'
+import DashboardCharts from './components/DashboardCharts'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflows' | 'performance'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflows' | 'system-admin'>('dashboard')
 
   return (
     <div style={{ 
@@ -30,7 +32,7 @@ function App() {
           SmartHaul
         </h1>
         
-        <nav style={{ display: 'flex', gap: 'var(--space-4)' }}>
+        <nav style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'center' }}>
           <button
             onClick={() => setActiveTab('dashboard')}
             style={{
@@ -41,7 +43,8 @@ function App() {
               border: '1px solid var(--color-border)',
               cursor: 'pointer',
               fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--weight-medium)'
+              fontWeight: 'var(--weight-medium)',
+              transition: 'all var(--motion-duration) var(--motion-ease-standard)'
             }}
           >
             Dashboard
@@ -56,26 +59,33 @@ function App() {
               border: '1px solid var(--color-border)',
               cursor: 'pointer',
               fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--weight-medium)'
+              fontWeight: 'var(--weight-medium)',
+              transition: 'all var(--motion-duration) var(--motion-ease-standard)'
             }}
           >
             Workflows
           </button>
           <button
-            onClick={() => setActiveTab('performance')}
+            onClick={() => setActiveTab('system-admin')}
             style={{
-              background: activeTab === 'performance' ? 'var(--color-primary)' : 'transparent',
-              color: activeTab === 'performance' ? 'var(--color-on-primary)' : 'var(--color-text)',
+              background: activeTab === 'system-admin' ? 'var(--color-primary)' : 'transparent',
+              color: activeTab === 'system-admin' ? 'var(--color-on-primary)' : 'var(--color-text)',
               padding: 'var(--space-2) var(--space-3)',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--color-border)',
               cursor: 'pointer',
               fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--weight-medium)'
+              fontWeight: 'var(--weight-medium)',
+              transition: 'all var(--motion-duration) var(--motion-ease-standard)'
             }}
           >
-            Performance
+            System Administrative
           </button>
+          
+          {/* Notifications in top bar */}
+          <div style={{ marginLeft: 'auto' }}>
+            <NotificationPanel />
+          </div>
         </nav>
       </header>
 
@@ -97,7 +107,7 @@ function App() {
               margin: '0 auto var(--space-6)',
               textAlign: 'center'
             }}>
-              Intelligent document & delivery management system with embedded N8N workflow automation.
+              Intelligent document & delivery management system ready for your custom dashboard implementation.
             </p>
             
             <div style={{
@@ -118,16 +128,16 @@ function App() {
                   marginBottom: 'var(--space-3)',
                   color: 'var(--color-primary)'
                 }}>
-                  📊 Database Status
+                  📊 Quick Overview
                 </h3>
                 <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)' }}>
-                  <strong>Shipments:</strong> 3 active shipments
+                  <strong>Status:</strong> ✅ All systems operational
                 </p>
                 <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)' }}>
-                  <strong>Events:</strong> 3 delivery events tracked
+                  <strong>Notifications:</strong> Real-time enabled
                 </p>
                 <p style={{ color: 'var(--color-text-secondary)' }}>
-                  <strong>Status:</strong> ✅ Connected to PostgreSQL
+                  <strong>Ready for:</strong> Your dashboard plan
                 </p>
               </div>
 
@@ -143,95 +153,32 @@ function App() {
                   marginBottom: 'var(--space-3)',
                   color: 'var(--color-primary)'
                 }}>
-                  🔄 N8N Workflows
+                  🎯 Next Steps
                 </h3>
                 <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)' }}>
-                  <strong>Active:</strong> 2 workflows running
+                  <strong>Phase 2:</strong> Document processing
                 </p>
                 <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)' }}>
-                  <strong>Executions:</strong> 26 total executions
+                  <strong>OCR Engine:</strong> Ready to implement
                 </p>
                 <p style={{ color: 'var(--color-text-secondary)' }}>
-                  <strong>Status:</strong> ✅ Connected to N8N Cloud
+                  <strong>Status:</strong> 🚀 Ready for development
                 </p>
               </div>
 
-              <div style={{
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-lg)',
-                padding: 'var(--space-4)'
-              }}>
-                <h3 style={{
-                  fontSize: 'var(--text-lg)',
-                  fontWeight: 'var(--weight-medium)',
-                  marginBottom: 'var(--space-3)',
-                  color: 'var(--color-primary)'
-                }}>
-                  🚀 System Status
-                </h3>
-                <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)' }}>
-                  <strong>Frontend:</strong> ✅ Running on port 5173
-                </p>
-                <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)' }}>
-                  <strong>Backend:</strong> ✅ Running on port 8000
-                </p>
-                <p style={{ color: 'var(--color-text-secondary)' }}>
-                  <strong>Overall:</strong> ✅ All systems operational
-                </p>
-              </div>
+
             </div>
             
-            {/* Real-time Notifications Panel */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              marginTop: 'var(--space-6)'
-            }}>
-              <NotificationPanel />
+            {/* Dashboard Charts */}
+            <div style={{ marginTop: 'var(--space-8)' }}>
+              <DashboardCharts />
             </div>
 
-            <div style={{ 
-              padding: 'var(--space-6)',
-              background: 'var(--color-surface)',
-              borderRadius: 'var(--radius-lg)',
-              border: '1px solid var(--color-border)',
-              textAlign: 'center'
-            }}>
-              <h3 style={{ 
-                fontSize: 'var(--text-xl)',
-                fontWeight: 'var(--weight-medium)',
-                marginBottom: 'var(--space-4)'
-              }}>
-                N8N Integration Demo
-              </h3>
-              <p style={{ 
-                color: 'var(--color-text-secondary)',
-                marginBottom: 'var(--space-4)'
-              }}>
-                Click "Workflows" to see the embedded N8N workflow editor and manage your automation workflows.
-              </p>
-              <button
-                onClick={() => setActiveTab('workflows')}
-                style={{
-                  background: 'var(--color-primary)',
-                  color: 'var(--color-on-primary)',
-                  padding: 'var(--space-3) var(--space-6)',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 'var(--text-md)',
-                  fontWeight: 'var(--weight-medium)'
-                }}
-              >
-                Open Workflow Editor
-              </button>
-            </div>
           </div>
         ) : activeTab === 'workflows' ? (
           <WorkflowDashboard />
         ) : (
-          <PerformanceDashboard />
+          <SystemAdministrative />
         )}
       </main>
     </div>
