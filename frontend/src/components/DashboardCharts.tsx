@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
 import { Package, ChartLine, TrendUp, MapPin } from '@phosphor-icons/react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useShipments } from '../contexts/ShipmentContext';
 
 type ChartView = 'shipments' | 'performance' | 'trends' | 'geography';
 
 const DashboardCharts: React.FC = () => {
   const [activeView, setActiveView] = useState<ChartView>('shipments');
+  const { getShipmentStats, getMonthlyShipmentData } = useShipments();
 
-  // Sample data for charts
-  const shipmentData = [
-    { month: 'Jan', delivered: 45, inTransit: 12, delayed: 3 },
-    { month: 'Feb', delivered: 52, inTransit: 8, delayed: 2 },
-    { month: 'Mar', delivered: 48, inTransit: 15, delayed: 4 },
-    { month: 'Apr', delivered: 61, inTransit: 10, delayed: 1 },
-    { month: 'May', delivered: 55, inTransit: 12, delayed: 2 },
-    { month: 'Jun', delivered: 67, inTransit: 8, delayed: 1 }
-  ];
+  // Get real shipment data
+  const shipmentStats = getShipmentStats();
+  const shipmentData = getMonthlyShipmentData();
 
   const performanceData = [
     { time: '00:00', cpu: 45, memory: 60, network: 30 },
@@ -74,7 +70,7 @@ const DashboardCharts: React.FC = () => {
               Shipment Analytics
             </h3>
             
-            {/* Mock Chart Data */}
+            {/* Real Shipment Statistics */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -87,7 +83,7 @@ const DashboardCharts: React.FC = () => {
                   fontWeight: 'var(--weight-bold)',
                   color: 'var(--color-primary)'
                 }}>
-                  9
+                  {shipmentStats.total}
                 </div>
                 <div style={{ color: 'var(--color-text-secondary)' }}>
                   Total Shipments
@@ -100,7 +96,7 @@ const DashboardCharts: React.FC = () => {
                   fontWeight: 'var(--weight-bold)',
                   color: 'var(--color-success)'
                 }}>
-                  7
+                  {shipmentStats.inTransit}
                 </div>
                 <div style={{ color: 'var(--color-text-secondary)' }}>
                   In Transit
@@ -113,15 +109,40 @@ const DashboardCharts: React.FC = () => {
                   fontWeight: 'var(--weight-bold)',
                   color: 'var(--color-warning)'
                 }}>
-                  2
+                  {shipmentStats.pending}
                 </div>
                 <div style={{ color: 'var(--color-text-secondary)' }}>
-                  Delayed
+                  Pending
+                </div>
+              </div>
+              
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: 'var(--text-3xl)',
+                  fontWeight: 'var(--weight-bold)',
+                  color: 'var(--color-info)'
+                }}>
+                  {shipmentStats.delivered}
+                </div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>
+                  Delivered
+                </div>
+              </div>
+
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: 'var(--text-3xl)',
+                  fontWeight: 'var(--weight-bold)',
+                  color: 'var(--color-text-secondary)'
+                }}>
+                  {shipmentStats.assigned}
+                </div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>
+                  Assigned
                 </div>
               </div>
             </div>
             
-            {/* Mock Chart Visualization */}
             {/* Shipments Chart */}
             <div style={{
               background: 'var(--color-surface-alt)',
@@ -129,18 +150,34 @@ const DashboardCharts: React.FC = () => {
               padding: 'var(--space-4)',
               height: '300px'
             }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={shipmentData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="delivered" fill="#0088FE" name="Delivered" />
-                  <Bar dataKey="inTransit" fill="#00C49F" name="In Transit" />
-                  <Bar dataKey="delayed" fill="#FF8042" name="Delayed" />
-                </BarChart>
-              </ResponsiveContainer>
+              {shipmentData && shipmentData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={shipmentData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="delivered" fill="#0088FE" name="Delivered" />
+                    <Bar dataKey="inTransit" fill="#00C49F" name="In Transit" />
+                    <Bar dataKey="pending" fill="#FF8042" name="Pending" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: 'var(--text-lg)'
+                }}>
+                  <Package size={48} weight="regular" />
+                  <span style={{ marginLeft: 'var(--space-2)' }}>
+                    No chart data available yet. Add some shipments to see analytics!
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         );

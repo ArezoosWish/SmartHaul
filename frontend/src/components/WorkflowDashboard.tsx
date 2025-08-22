@@ -67,6 +67,7 @@ interface Prediction {
 export const WorkflowDashboard: React.FC = () => {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [shipments, setShipments] = useState<Shipment[]>([]);
+  // @ts-ignore - deliveryEvents used in future implementation
   const [deliveryEvents, setDeliveryEvents] = useState<DeliveryEvent[]>([]);
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [users, setUsers] = useState<User[]>([]);

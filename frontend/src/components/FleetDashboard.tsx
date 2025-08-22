@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, Plus, Wrench, GasPump, MapPin, Gauge, X } from '@phosphor-icons/react';
+import { Truck, Plus, Wrench, GasPump, MapPin, Gauge, X, PencilSimple, Trash, Eye, Warning } from '@phosphor-icons/react';
 
 interface TruckData {
   id: number;
@@ -39,6 +39,11 @@ const FleetDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'trucks' | 'maintenance' | 'analytics'>('overview');
   const [showAddTruckModal, setShowAddTruckModal] = useState(false);
+  const [showEditTruckModal, setShowEditTruckModal] = useState(false);
+  const [showDeleteTruckModal, setShowDeleteTruckModal] = useState(false);
+  const [showViewTruckModal, setShowViewTruckModal] = useState(false);
+  const [showMaintenanceModal, setShowMaintenanceModal] = useState(false);
+  const [selectedTruck, setSelectedTruck] = useState<TruckData | null>(null);
   const [newTruck, setNewTruck] = useState({
     plate_number: '',
     make: '',
@@ -164,6 +169,86 @@ const FleetDashboard: React.FC = () => {
       fuel_efficiency: '',
       driver_id: ''
     });
+  };
+
+  const handleEditTruck = (truck: TruckData) => {
+    setSelectedTruck(truck);
+    setNewTruck({
+      plate_number: truck.plate_number,
+      make: truck.make || '',
+      model: truck.model || '',
+      year: truck.year?.toString() || '',
+      capacity_volume: truck.capacity_volume?.toString() || '',
+      capacity_weight: truck.capacity_weight?.toString() || '',
+      fuel_type: truck.fuel_type || '',
+      fuel_efficiency: truck.fuel_efficiency?.toString() || '',
+      driver_id: truck.driver_id?.toString() || ''
+    });
+    setShowEditTruckModal(true);
+  };
+
+  const handleUpdateTruck = async () => {
+    if (!selectedTruck) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/fleet/trucks/${selectedTruck.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...newTruck,
+          year: newTruck.year ? parseInt(newTruck.year) : null,
+          capacity_volume: newTruck.capacity_volume ? parseFloat(newTruck.capacity_volume) : null,
+          capacity_weight: newTruck.capacity_weight ? parseFloat(newTruck.capacity_weight) : null,
+          fuel_efficiency: newTruck.fuel_efficiency ? parseFloat(newTruck.fuel_efficiency) : null,
+          driver_id: newTruck.driver_id ? parseInt(newTruck.driver_id) : null
+        })
+      });
+
+      if (response.ok) {
+        await fetchFleetData();
+        resetForm();
+        setShowEditTruckModal(false);
+        setSelectedTruck(null);
+      } else {
+        const errorData = await response.json();
+        setError(`Failed to update truck: ${errorData.detail || 'Unknown error'}`);
+      }
+    } catch (err) {
+      setError('Failed to update truck');
+      console.error('Error updating truck:', err);
+    }
+  };
+
+  const handleDeleteTruck = async () => {
+    if (!selectedTruck) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/fleet/trucks/${selectedTruck.id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        await fetchFleetData();
+        setShowDeleteTruckModal(false);
+        setSelectedTruck(null);
+      } else {
+        const errorData = await response.json();
+        setError(`Failed to delete truck: ${errorData.detail || 'Unknown error'}`);
+      }
+    } catch (err) {
+      setError('Failed to delete truck');
+      console.error('Error deleting truck:', err);
+    }
+  };
+
+  const handleViewTruck = (truck: TruckData) => {
+    setSelectedTruck(truck);
+    setShowViewTruckModal(true);
+  };
+
+  const handleMaintenance = (truck: TruckData) => {
+    setSelectedTruck(truck);
+    setShowMaintenanceModal(true);
   };
 
   if (loading) {
@@ -504,46 +589,80 @@ const FleetDashboard: React.FC = () => {
                   gap: 'var(--space-2)'
                 }}>
                   <button
+                    onClick={() => handleViewTruck(truck)}
                     style={{
                       background: 'transparent',
-                      color: 'var(--color-primary)',
+                      color: 'var(--color-text-secondary)',
                       padding: 'var(--space-1) var(--space-2)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-primary)',
+                      border: '1px solid var(--color-text-secondary)',
                       cursor: 'pointer',
                       fontSize: 'var(--text-xs)',
-                      flex: 1
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 'var(--space-1)'
                     }}
                   >
-                    Edit
+                    <Eye size={12} /> View
                   </button>
                   <button
+                    onClick={() => handleEditTruck(truck)}
                     style={{
                       background: 'transparent',
-                      color: 'var(--color-warning)',
+                      color: 'var(--color-text-secondary)',
                       padding: 'var(--space-1) var(--space-2)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-warning)',
+                      border: '1px solid var(--color-text-secondary)',
                       cursor: 'pointer',
                       fontSize: 'var(--text-xs)',
-                      flex: 1
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 'var(--space-1)'
                     }}
                   >
-                    Maintenance
+                    <PencilSimple size={12} /> Edit
                   </button>
                   <button
+                    onClick={() => handleMaintenance(truck)}
                     style={{
                       background: 'transparent',
-                      color: 'var(--color-info)',
+                      color: 'var(--color-text-secondary)',
                       padding: 'var(--space-1) var(--space-2)',
                       borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--color-info)',
+                      border: '1px solid var(--color-text-secondary)',
                       cursor: 'pointer',
                       fontSize: 'var(--text-xs)',
-                      flex: 1
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 'var(--space-1)'
                     }}
                   >
-                    Fuel
+                    <Wrench size={12} /> Maintenance
+                  </button>
+                  <button
+                    onClick={() => { setSelectedTruck(truck); setShowDeleteTruckModal(true); }}
+                    style={{
+                      background: 'transparent',
+                      color: 'var(--color-danger)',
+                      padding: 'var(--space-1) var(--space-2)',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--color-danger)',
+                      cursor: 'pointer',
+                      fontSize: 'var(--text-xs)',
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 'var(--space-1)'
+                    }}
+                  >
+                    <Trash size={12} /> Delete
                   </button>
                 </div>
               </div>
@@ -857,6 +976,638 @@ const FleetDashboard: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Truck Modal */}
+      {showEditTruckModal && selectedTruck && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'var(--color-bg)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 'var(--space-6)',
+            maxWidth: '800px',
+            width: '90%',
+            maxHeight: '90vh',
+            overflow: 'auto'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'var(--space-4)'
+            }}>
+              <h3 style={{ margin: 0, color: 'var(--color-text)' }}>Edit Truck: {selectedTruck.plate_number}</h3>
+              <button
+                onClick={() => { setShowEditTruckModal(false); setSelectedTruck(null); resetForm(); }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--color-text-secondary)'
+                }}
+              >
+                <X size={20} weight="bold" />
+              </button>
+            </div>
+            
+            <form onSubmit={(e) => { e.preventDefault(); handleUpdateTruck(); }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: 'var(--space-4)',
+                marginBottom: 'var(--space-6)'
+              }}>
+                <div style={{ marginBottom: 'var(--space-4)' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: 'var(--space-2)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-medium)',
+                    color: 'var(--color-text)'
+                  }}>
+                    Plate Number *
+                  </label>
+                  <input
+                    type="text"
+                    value={newTruck.plate_number}
+                    onChange={(e) => setNewTruck({...newTruck, plate_number: e.target.value})}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: 'var(--space-3)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'var(--color-bg)',
+                      color: 'var(--color-text)',
+                      fontSize: 'var(--text-sm)',
+                      transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--color-primary)';
+                      e.target.style.boxShadow = '0 0 0 3px var(--focus-ring-color)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'var(--color-border)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+                <div style={{ marginBottom: 'var(--space-4)' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: 'var(--space-2)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-medium)',
+                    color: 'var(--color-text)'
+                  }}>
+                    Make
+                  </label>
+                  <input
+                    type="text"
+                    value={newTruck.make}
+                    onChange={(e) => setNewTruck({...newTruck, make: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: 'var(--space-3)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'var(--color-bg)',
+                      color: 'var(--color-text)',
+                      fontSize: 'var(--text-sm)',
+                      transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--color-primary)';
+                      e.target.style.boxShadow = '0 0 0 3px var(--focus-ring-color)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'var(--color-border)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+                <div style={{ marginBottom: 'var(--space-4)' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: 'var(--space-2)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-medium)',
+                    color: 'var(--color-text)'
+                  }}>
+                    Model
+                  </label>
+                  <input
+                    type="text"
+                    value={newTruck.model}
+                    onChange={(e) => setNewTruck({...newTruck, model: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: 'var(--space-3)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'var(--color-bg)',
+                      color: 'var(--color-text)',
+                      fontSize: 'var(--text-sm)',
+                      transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--color-primary)';
+                      e.target.style.boxShadow = '0 0 0 3px var(--focus-ring-color)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'var(--color-border)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+                <div style={{ marginBottom: 'var(--space-4)' }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: 'var(--space-2)',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-medium)',
+                    color: 'var(--color-text)'
+                  }}>
+                    Year
+                  </label>
+                  <input
+                    type="number"
+                    value={newTruck.year}
+                    onChange={(e) => setNewTruck({...newTruck, year: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: 'var(--space-3)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'var(--color-bg)',
+                      color: 'var(--color-text)',
+                      fontSize: 'var(--text-sm)',
+                      transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--color-primary)';
+                      e.target.style.boxShadow = '0 0 0 3px var(--focus-ring-color)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'var(--color-border)';
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+              </div>
+              
+              <div style={{ 
+                display: 'flex', 
+                gap: 'var(--space-4)', 
+                justifyContent: 'flex-end',
+                marginTop: 'var(--space-6)',
+                paddingTop: 'var(--space-4)',
+                borderTop: '1px solid var(--color-border)'
+              }}>
+                <button 
+                  type="button" 
+                  onClick={() => { setShowEditTruckModal(false); setSelectedTruck(null); resetForm(); }}
+                  style={{
+                    background: 'transparent',
+                    color: 'var(--color-text-secondary)',
+                    border: '1px solid var(--color-border)',
+                    padding: 'var(--space-3) var(--space-6)',
+                    borderRadius: 'var(--radius-md)',
+                    cursor: 'pointer',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-medium)',
+                    transition: 'all var(--motion-duration) var(--motion-ease-standard)',
+                    minWidth: '120px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--color-surface-alt)';
+                    e.currentTarget.style.borderColor = 'var(--color-text-secondary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  style={{
+                    background: 'var(--color-primary)',
+                    color: 'var(--color-on-primary)',
+                    border: 'none',
+                    padding: 'var(--space-3) var(--space-6)',
+                    borderRadius: 'var(--radius-md)',
+                    cursor: 'pointer',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-medium)',
+                    transition: 'all var(--motion-duration) var(--motion-ease-standard)',
+                    minWidth: '140px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--color-primary-hover)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'var(--color-primary)';
+                  }}
+                >
+                  Update Truck
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Truck Details Modal */}
+      {showViewTruckModal && selectedTruck && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'var(--color-bg)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 'var(--space-6)',
+            maxWidth: '600px',
+            width: '90%',
+            maxHeight: '90vh',
+            overflow: 'auto'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'var(--space-4)'
+            }}>
+              <h3 style={{ margin: 0, color: 'var(--color-text)' }}>Truck Details: {selectedTruck.plate_number}</h3>
+              <button
+                onClick={() => { setShowViewTruckModal(false); setSelectedTruck(null); }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--color-text-secondary)'
+                }}
+              >
+                <X size={20} weight="bold" />
+              </button>
+            </div>
+            
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: 'var(--space-4)',
+              marginBottom: 'var(--space-4)'
+            }}>
+              <div>
+                <div style={{ fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-1)' }}>Plate Number</div>
+                <div>{selectedTruck.plate_number}</div>
+              </div>
+              <div>
+                <div style={{ fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-1)' }}>Make & Model</div>
+                <div>{selectedTruck.make} {selectedTruck.model} ({selectedTruck.year})</div>
+              </div>
+              <div>
+                <div style={{ fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-1)' }}>Status</div>
+                <div style={{ 
+                  color: selectedTruck.status === 'available' ? 'var(--color-success)' : 
+                        selectedTruck.status === 'in_use' ? 'var(--color-warning)' : 
+                        'var(--color-danger)'
+                }}>
+                  {selectedTruck.status?.toUpperCase() || 'AVAILABLE'}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-1)' }}>Capacity</div>
+                <div>{selectedTruck.capacity_weight || 0} lbs, {selectedTruck.capacity_volume || 0} ft³</div>
+              </div>
+              <div>
+                <div style={{ fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-1)' }}>Fuel Type</div>
+                <div>{selectedTruck.fuel_type || 'N/A'}</div>
+              </div>
+              <div>
+                <div style={{ fontWeight: 'var(--weight-bold)', marginBottom: 'var(--space-1)' }}>Total Miles</div>
+                <div>{selectedTruck.total_miles?.toLocaleString() || 0} miles</div>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setShowViewTruckModal(false); setSelectedTruck(null); }}
+                style={{
+                  background: 'var(--color-primary)',
+                  color: 'var(--color-on-primary)',
+                  border: 'none',
+                  padding: 'var(--space-2) var(--space-4)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 'var(--weight-medium)'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Maintenance Modal */}
+      {showMaintenanceModal && selectedTruck && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'var(--color-bg)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 'var(--space-6)',
+            maxWidth: '500px',
+            width: '90%'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'var(--space-4)'
+            }}>
+              <h3 style={{ margin: 0, color: 'var(--color-text)' }}>Schedule Maintenance</h3>
+              <button
+                onClick={() => { setShowMaintenanceModal(false); setSelectedTruck(null); }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--color-text-secondary)'
+                }}
+              >
+                <X size={20} weight="bold" />
+              </button>
+            </div>
+            
+            <p style={{ marginBottom: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>
+              Schedule maintenance for truck <strong>{selectedTruck.plate_number}</strong>
+            </p>
+            
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: 'var(--space-2)', 
+                fontWeight: 'var(--weight-medium)',
+                fontSize: 'var(--text-sm)',
+                color: 'var(--color-text)'
+              }}>
+                Maintenance Type
+              </label>
+              <select style={{
+                width: '100%',
+                padding: 'var(--space-3)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--color-bg)',
+                color: 'var(--color-text)',
+                fontSize: 'var(--text-sm)',
+                transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'var(--color-primary)';
+                e.target.style.boxShadow = '0 0 0 3px var(--focus-ring-color)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'var(--color-border)';
+                e.target.style.boxShadow = 'none';
+              }}>
+                <option value="routine">Routine Maintenance</option>
+                <option value="oil_change">Oil Change</option>
+                <option value="tire_rotation">Tire Rotation</option>
+                <option value="brake_service">Brake Service</option>
+                <option value="engine_repair">Engine Repair</option>
+                <option value="transmission">Transmission Service</option>
+              </select>
+            </div>
+            
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: 'var(--space-2)', 
+                fontWeight: 'var(--weight-medium)',
+                fontSize: 'var(--text-sm)',
+                color: 'var(--color-text)'
+              }}>
+                Scheduled Date
+              </label>
+              <input
+                type="date"
+                style={{
+                  width: '100%',
+                  padding: 'var(--space-3)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--color-bg)',
+                  color: 'var(--color-text)',
+                  fontSize: 'var(--text-sm)',
+                  transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'var(--color-primary)';
+                  e.target.style.boxShadow = '0 0 0 3px var(--focus-ring-color)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'var(--color-border)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              />
+            </div>
+            
+            <div style={{ 
+              display: 'flex', 
+              gap: 'var(--space-4)', 
+              justifyContent: 'flex-end',
+              marginTop: 'var(--space-6)',
+              paddingTop: 'var(--space-4)',
+              borderTop: '1px solid var(--color-border)'
+            }}>
+              <button
+                onClick={() => { setShowMaintenanceModal(false); setSelectedTruck(null); }}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--color-text-secondary)',
+                  border: '1px solid var(--color-border)',
+                  padding: 'var(--space-3) var(--space-6)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 'var(--weight-medium)',
+                  transition: 'all var(--motion-duration) var(--motion-ease-standard)',
+                  minWidth: '120px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-surface-alt)';
+                  e.currentTarget.style.borderColor = 'var(--color-text-secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Here you would normally save the maintenance record
+                  console.log('Schedule maintenance for truck:', selectedTruck.id);
+                  setShowMaintenanceModal(false);
+                  setSelectedTruck(null);
+                }}
+                style={{
+                  background: 'var(--color-warning)',
+                  color: 'var(--color-on-warning)',
+                  border: 'none',
+                  padding: 'var(--space-3) var(--space-6)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 'var(--weight-medium)',
+                  transition: 'all var(--motion-duration) var(--motion-ease-standard)',
+                  minWidth: '180px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-warning-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--color-warning)';
+                }}
+              >
+                Schedule Maintenance
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Truck Confirmation Modal */}
+      {showDeleteTruckModal && selectedTruck && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'var(--color-bg)',
+            borderRadius: 'var(--radius-lg)',
+            padding: 'var(--space-6)',
+            maxWidth: '400px',
+            width: '90%'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-3)',
+              marginBottom: 'var(--space-4)'
+            }}>
+              <Warning size={24} weight="fill" style={{ color: 'var(--color-danger)' }} />
+              <h3 style={{ margin: 0, color: 'var(--color-text)' }}>Delete Truck</h3>
+            </div>
+            
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-6)' }}>
+              Are you sure you want to delete truck <strong>{selectedTruck.plate_number}</strong>? 
+              This action cannot be undone.
+            </p>
+            
+            <div style={{ 
+              display: 'flex', 
+              gap: 'var(--space-4)', 
+              justifyContent: 'flex-end',
+              marginTop: 'var(--space-6)',
+              paddingTop: 'var(--space-4)',
+              borderTop: '1px solid var(--color-border)'
+            }}>
+              <button
+                onClick={() => { setShowDeleteTruckModal(false); setSelectedTruck(null); }}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--color-text-secondary)',
+                  border: '1px solid var(--color-border)',
+                  padding: 'var(--space-3) var(--space-6)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 'var(--weight-medium)',
+                  transition: 'all var(--motion-duration) var(--motion-ease-standard)',
+                  minWidth: '120px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-surface-alt)';
+                  e.currentTarget.style.borderColor = 'var(--color-text-secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteTruck}
+                style={{
+                  background: 'var(--color-danger)',
+                  color: 'var(--color-on-danger)',
+                  border: 'none',
+                  padding: 'var(--space-3) var(--space-6)',
+                  borderRadius: 'var(--radius-md)',
+                  cursor: 'pointer',
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 'var(--weight-medium)',
+                  transition: 'all var(--motion-duration) var(--motion-ease-standard)',
+                  minWidth: '140px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-danger-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'var(--color-danger)';
+                }}
+              >
+                Delete Truck
+              </button>
+            </div>
           </div>
         </div>
       )}

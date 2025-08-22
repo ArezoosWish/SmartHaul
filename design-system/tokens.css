@@ -3,6 +3,7 @@
   --color-primary: #1e40af;
   --color-primary-hover: #1a3a9e;
   --color-primary-active: #162f7f;
+  --color-primary-light: #dbeafe;
   --color-on-primary: #ffffff;
 
   --color-secondary: #10b981;
@@ -11,12 +12,18 @@
   --color-on-secondary: #052e22;
 
   --color-warning: #f59e0b;
+  --color-warning-hover: #d97706;
   --color-on-warning: #0f172a;
   --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
   --color-on-danger: #0f172a;
+  --color-error: #ef4444;
+  --color-on-error: #0f172a;
   --color-info: #3b82f6;
+  --color-info-hover: #2563eb;
   --color-on-info: #0f172a;
   --color-success: #10b981;
+  --color-success-hover: #059669;
   --color-on-success: #052e22;
 
   /* Neutrals */
