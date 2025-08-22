@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package, ChartLine, TrendingUp, MapPin } from '@phosphor-icons/react';
+import { Package, ChartLine, TrendUp, MapPin } from '@phosphor-icons/react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 type ChartView = 'shipments' | 'performance' | 'trends' | 'geography';
@@ -46,7 +46,7 @@ const DashboardCharts: React.FC = () => {
   const chartViews = [
     { id: 'shipments', label: 'Shipments', icon: <Package size={20} weight="regular" /> },
     { id: 'performance', label: 'Performance', icon: <ChartLine size={20} weight="regular" /> },
-    { id: 'trends', label: 'Trends', icon: <TrendingUp size={20} weight="regular" /> },
+    { id: 'trends', label: 'Trends', icon: <TrendUp size={20} weight="regular" /> },
     { id: 'geography', label: 'Geography', icon: <MapPin size={20} weight="regular" /> }
   ];
 
@@ -255,7 +255,7 @@ const DashboardCharts: React.FC = () => {
               alignItems: 'center',
               gap: 'var(--space-2)'
             }}>
-              <TrendingUp size={24} weight="regular" />
+                                        <TrendUp size={24} weight="regular" />
               Delivery Trends
             </h3>
             
@@ -272,7 +272,7 @@ const DashboardCharts: React.FC = () => {
                   fontWeight: 'var(--weight-bold)',
                   color: 'var(--color-success)'
                 }}>
-                  <TrendingUp size={20} weight="fill" style={{ color: 'var(--color-success)' }} /> +15%
+                  <TrendUp size={20} weight="fill" style={{ color: 'var(--color-success)' }} /> +15%
                 </div>
                 <div style={{ color: 'var(--color-text-secondary)' }}>
                   On-time Delivery
@@ -285,7 +285,7 @@ const DashboardCharts: React.FC = () => {
                   fontWeight: 'var(--weight-bold)',
                   color: 'var(--color-warning)'
                 }}>
-                  <TrendingUp size={20} weight="fill" style={{ color: 'var(--color-danger)', transform: 'rotate(180deg)' }} /> -8%
+                  <TrendUp size={20} weight="fill" style={{ color: 'var(--color-danger)', transform: 'rotate(180deg)' }} /> -8%
                 </div>
                 <div style={{ color: 'var(--color-text-secondary)' }}>
                   Delays
@@ -298,7 +298,7 @@ const DashboardCharts: React.FC = () => {
                   fontWeight: 'var(--weight-bold)',
                   color: 'var(--color-info)'
                 }}>
-                  <TrendingUp size={20} weight="fill" style={{ color: 'var(--color-success)' }} /> +22%
+                  <TrendUp size={20} weight="fill" style={{ color: 'var(--color-success)' }} /> +22%
                 </div>
                 <div style={{ color: 'var(--color-text-secondary)' }}>
                   Efficiency
