@@ -204,7 +204,7 @@ export const WorkflowDashboard: React.FC = () => {
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
         gap: 'var(--space-3)'
       }}>
-        {shipments.map((shipment) => (
+        {shipments && shipments.length > 0 ? shipments.map((shipment) => (
           <div
             key={shipment.id}
             style={{
@@ -249,7 +249,18 @@ export const WorkflowDashboard: React.FC = () => {
               <div><strong>Created:</strong> {new Date(shipment.created_at).toLocaleDateString()}</div>
             </div>
           </div>
-        ))}
+        )) : (
+          <div style={{
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-6)',
+            textAlign: 'center',
+            color: 'var(--color-text-secondary)'
+          }}>
+            No shipments available
+          </div>
+        )}
       </div>
     </div>
   );

@@ -5,9 +5,10 @@ import PerformanceDashboard from './components/PerformanceDashboard'
 import SystemAdministrative from './components/SystemAdministrative'
 import NotificationPanel from './components/NotificationPanel'
 import DashboardCharts from './components/DashboardCharts'
+import FleetDashboard from './components/FleetDashboard'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflows' | 'system-admin'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'workflows' | 'system-admin' | 'fleet'>('dashboard')
 
   return (
     <div style={{ 
@@ -82,6 +83,23 @@ function App() {
             System Administrative
           </button>
           
+          <button
+            onClick={() => setActiveTab('fleet')}
+            style={{
+              background: activeTab === 'fleet' ? 'var(--color-primary)' : 'transparent',
+              color: activeTab === 'fleet' ? 'var(--color-on-primary)' : 'var(--color-text)',
+              padding: 'var(--space-2) var(--space-3)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--color-border)',
+              cursor: 'pointer',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--weight-medium)',
+              transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+            }}
+          >
+            Fleet Management
+          </button>
+          
           {/* Notifications in top bar */}
           <div style={{ marginLeft: 'auto' }}>
             <NotificationPanel />
@@ -120,6 +138,8 @@ function App() {
           </div>
         ) : activeTab === 'workflows' ? (
           <WorkflowDashboard />
+        ) : activeTab === 'fleet' ? (
+          <FleetDashboard />
         ) : (
           <SystemAdministrative />
         )}

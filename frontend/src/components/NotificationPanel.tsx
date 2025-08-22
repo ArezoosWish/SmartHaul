@@ -18,8 +18,13 @@ const NotificationPanel: React.FC = () => {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    connectWebSocket();
+    // Delay connection to ensure backend is ready
+    const timer = setTimeout(() => {
+      connectWebSocket();
+    }, 1000);
+    
     return () => {
+      clearTimeout(timer);
       if (wsRef.current) {
         wsRef.current.close();
       }
@@ -78,6 +83,10 @@ const NotificationPanel: React.FC = () => {
 
       ws.onerror = (error) => {
         console.error('WebSocket error:', error);
+        // Don't log connection errors to avoid spam
+        if (error.type !== 'error') {
+          console.warn('WebSocket connection error - will retry automatically');
+        }
       };
     } catch (error) {
       console.error('Failed to create WebSocket:', error);
