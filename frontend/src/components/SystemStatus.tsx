@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Globe, Gear, Database, ArrowsClockwise, Rocket, CheckCircle, XCircle, ChartLine } from '@phosphor-icons/react';
 
 interface SystemMetrics {
   frontend: boolean;
@@ -67,7 +68,7 @@ const SystemStatus: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusIcon = (status: boolean) => status ? '✅' : '❌';
+  const getStatusIcon = (status: boolean) => status ? <CheckCircle size={16} weight="fill" /> : <XCircle size={16} weight="fill" />;
   const getStatusColor = (status: boolean) => status ? 'var(--color-success)' : 'var(--color-danger)';
 
   return (
@@ -89,9 +90,13 @@ const SystemStatus: React.FC = () => {
             fontSize: 'var(--text-lg)',
             fontWeight: 'var(--weight-medium)',
             marginBottom: 'var(--space-3)',
-            color: 'var(--color-primary)'
+            color: 'var(--color-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)'
           }}>
-            🌐 Frontend
+            <Globe size={20} weight="regular" />
+            Frontend
           </h4>
           <p style={{ 
             color: getStatusColor(metrics.frontend),
@@ -115,9 +120,13 @@ const SystemStatus: React.FC = () => {
             fontSize: 'var(--text-lg)',
             fontWeight: 'var(--weight-medium)',
             marginBottom: 'var(--space-3)',
-            color: 'var(--color-primary)'
+            color: 'var(--color-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)'
           }}>
-            ⚙️ Backend API
+            <Gear size={20} weight="regular" />
+            Backend API
           </h4>
           <p style={{ 
             color: getStatusColor(metrics.backend),
@@ -141,9 +150,13 @@ const SystemStatus: React.FC = () => {
             fontSize: 'var(--text-lg)',
             fontWeight: 'var(--weight-medium)',
             marginBottom: 'var(--space-3)',
-            color: 'var(--color-primary)'
+            color: 'var(--color-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)'
           }}>
-            🗄️ Database
+            <Database size={20} weight="regular" />
+            Database
           </h4>
           <p style={{ 
             color: getStatusColor(metrics.database),
@@ -167,9 +180,13 @@ const SystemStatus: React.FC = () => {
             fontSize: 'var(--text-lg)',
             fontWeight: 'var(--weight-medium)',
             marginBottom: 'var(--space-3)',
-            color: 'var(--color-primary)'
+            color: 'var(--color-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)'
           }}>
-            🔄 N8N
+            <ArrowsClockwise size={20} weight="regular" />
+            N8N
           </h4>
           <p style={{ 
             color: getStatusColor(metrics.n8n),
@@ -193,9 +210,13 @@ const SystemStatus: React.FC = () => {
             fontSize: 'var(--text-lg)',
             fontWeight: 'var(--weight-medium)',
             marginBottom: 'var(--space-3)',
-            color: 'var(--color-primary)'
+            color: 'var(--color-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)'
           }}>
-            🚀 Redis
+            <Rocket size={20} weight="regular" />
+            Redis
           </h4>
           <p style={{ 
             color: getStatusColor(metrics.redis),
@@ -296,7 +317,8 @@ const SystemStatus: React.FC = () => {
           marginBottom: 'var(--space-4)',
           color: 'var(--color-primary)'
         }}>
-          📊 Operational Metrics
+          <ChartLine size={24} weight="regular" />
+          Operational Metrics
         </h4>
         
         <div style={{

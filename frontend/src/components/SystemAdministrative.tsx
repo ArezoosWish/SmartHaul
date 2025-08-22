@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { WorkflowDashboard } from './WorkflowDashboard';
 import PerformanceDashboard from './PerformanceDashboard';
 import SystemStatus from './SystemStatus';
+import { ArrowsClockwise, ChartLine, Rocket } from '@phosphor-icons/react';
 
 type AdminTab = 'n8n' | 'performance' | 'system-status';
 
@@ -40,10 +41,14 @@ const SystemAdministrative: React.FC = () => {
             fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-medium)',
             minWidth: '120px',
-            transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+            transition: 'all var(--motion-duration) var(--motion-ease-standard)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)'
           }}
         >
-          🔄 N8N Workflows
+          <ArrowsClockwise size={18} weight="regular" />
+          N8N Workflows
         </button>
         
         <button
@@ -58,10 +63,14 @@ const SystemAdministrative: React.FC = () => {
             fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-medium)',
             minWidth: '120px',
-            transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+            transition: 'all var(--motion-duration) var(--motion-ease-standard)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)'
           }}
         >
-          📊 Performance
+          <ChartLine size={18} weight="regular" />
+          Performance
         </button>
         
         <button
@@ -76,10 +85,14 @@ const SystemAdministrative: React.FC = () => {
             fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-medium)',
             minWidth: '120px',
-            transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+            transition: 'all var(--motion-duration) var(--motion-ease-standard)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)'
           }}
         >
-          🚀 System Status
+          <Rocket size={18} weight="regular" />
+          System Status
         </button>
       </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Package, ArrowsClockwise, Users, FileText, Lightbulb } from '@phosphor-icons/react';
 import { N8NWorkflowEditor } from './N8NWorkflowEditor';
 import { config } from '../config';
 
@@ -657,13 +658,13 @@ export const WorkflowDashboard: React.FC = () => {
         paddingBottom: 'var(--space-2)'
       }}>
         {[
-          { key: 'shipments', label: '📦 Shipments', count: shipments.length },
-          { key: 'trucks', label: '🚛 Trucks', count: trucks.length },
-          { key: 'users', label: '👥 Users', count: users.length },
-          { key: 'documents', label: '📄 Documents', count: documents.length },
-          { key: 'predictions', label: '🔮 Predictions', count: predictions.length },
-          { key: 'workflows', label: '🔄 Workflows', count: workflows.length }
-        ].map(({ key, label, count }) => (
+          { key: 'shipments', label: 'Shipments', icon: <Package size={18} weight="regular" />, count: shipments.length },
+          { key: 'trucks', label: 'Trucks', icon: <ArrowsClockwise size={18} weight="regular" />, count: trucks.length },
+          { key: 'users', label: 'Users', icon: <Users size={18} weight="regular" />, count: users.length },
+          { key: 'documents', label: 'Documents', icon: <FileText size={18} weight="regular" />, count: documents.length },
+          { key: 'predictions', label: 'Predictions', icon: <Lightbulb size={18} weight="regular" />, count: predictions.length },
+          { key: 'workflows', label: 'Workflows', icon: <ArrowsClockwise size={18} weight="regular" />, count: workflows.length }
+        ].map(({ key, label, icon, count }) => (
           <button
             key={key}
             onClick={() => setActiveSection(key as any)}
@@ -678,9 +679,12 @@ export const WorkflowDashboard: React.FC = () => {
               fontWeight: 'var(--weight-medium)',
               transition: 'all 0.2s ease'
             }}
-          >
-            {label} ({count})
-          </button>
+                      >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                {icon}
+                {label} ({count})
+              </div>
+            </button>
         ))}
       </div>
 

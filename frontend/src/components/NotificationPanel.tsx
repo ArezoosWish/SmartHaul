@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './NotificationPanel.css';
+import { Bell, CheckCircle, Warning, XCircle, Info } from '@phosphor-icons/react';
 
 interface Notification {
   type: string;
@@ -13,8 +13,8 @@ interface Notification {
 
 const NotificationPanel: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -26,6 +26,21 @@ const NotificationPanel: React.FC = () => {
     };
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (isExpanded && !target.closest('.notification-bell-container')) {
+        setIsExpanded(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isExpanded]);
+
   const connectWebSocket = () => {
     try {
       const ws = new WebSocket('ws://localhost:8000/api/notifications/ws/notifications');
@@ -33,7 +48,6 @@ const NotificationPanel: React.FC = () => {
 
       ws.onopen = () => {
         setIsConnected(true);
-        setConnectionStatus('Connected');
         console.log('WebSocket connected to SmartHaul notifications');
       };
 
@@ -52,7 +66,6 @@ const NotificationPanel: React.FC = () => {
 
       ws.onclose = () => {
         setIsConnected(false);
-        setConnectionStatus('Disconnected');
         console.log('WebSocket disconnected');
         
         // Try to reconnect after 5 seconds
@@ -65,11 +78,9 @@ const NotificationPanel: React.FC = () => {
 
       ws.onerror = (error) => {
         console.error('WebSocket error:', error);
-        setConnectionStatus('Error');
       };
     } catch (error) {
       console.error('Failed to create WebSocket:', error);
-      setConnectionStatus('Failed to connect');
     }
   };
 
@@ -85,11 +96,11 @@ const NotificationPanel: React.FC = () => {
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical': return '🚨';
-      case 'error': return '⚠️';
-      case 'warning': return '⚠️';
-      case 'info': return 'ℹ️';
-      default: return '📢';
+      case 'critical': return <XCircle size={20} weight="fill" />;
+      case 'error': return <Warning size={20} weight="fill" />;
+      case 'warning': return <Warning size={20} weight="fill" />;
+      case 'info': return <Info size={20} weight="fill" />;
+      default: return <Info size={20} weight="fill" />;
     }
   };
 
@@ -106,71 +117,225 @@ const NotificationPanel: React.FC = () => {
     setNotifications([]);
   };
 
+  const toggleNotifications = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const getUnreadCount = () => {
+    return notifications.length;
+  };
+
   return (
-    <div className="notification-panel">
-      <div className="notification-header">
-        <h3>🔔 Real-time Notifications</h3>
-        <div className="notification-controls">
-          <span className={`connection-status ${isConnected ? 'connected' : 'disconnected'}`}>
-            {connectionStatus}
-          </span>
-          <button 
-            onClick={clearNotifications}
-            className="clear-btn"
-            disabled={notifications.length === 0}
+    <div className="notification-bell-container" style={{ position: 'relative' }}>
+      {/* Bell Button */}
+      <button
+        onClick={toggleNotifications}
+        className="notification-bell"
+        style={{
+          position: 'relative',
+          background: 'transparent',
+          border: '1px solid var(--color-border)',
+          cursor: 'pointer',
+          padding: 'var(--space-2) var(--space-3)',
+          borderRadius: 'var(--radius-md)',
+          color: 'var(--color-text)',
+          transition: 'all var(--motion-duration) var(--motion-ease-standard)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <Bell size={20} weight="regular" />
+        {/* Notification Badge */}
+        {getUnreadCount() > 0 && (
+          <span
+            style={{
+              position: 'absolute',
+              top: '-2px',
+              right: '-2px',
+              background: 'var(--color-danger)',
+              color: 'var(--color-on-danger)',
+              borderRadius: 'var(--radius-pill)',
+              fontSize: 'var(--text-xs)',
+              padding: '2px 6px',
+              minWidth: '18px',
+              textAlign: 'center',
+              fontWeight: 'var(--weight-bold)'
+            }}
           >
-            Clear All
-          </button>
-        </div>
-      </div>
-
-      <div className="notification-list">
-        {notifications.length === 0 ? (
-          <div className="no-notifications">
-            <p>No notifications yet</p>
-            <small>Notifications from N8N workflows will appear here</small>
-          </div>
-        ) : (
-          notifications.map((notification, index) => (
-            <div 
-              key={index} 
-              className="notification-item"
-              style={{ borderLeftColor: getSeverityColor(notification.severity) }}
-            >
-              <div className="notification-icon">
-                {getSeverityIcon(notification.severity)}
-              </div>
-              <div className="notification-content">
-                <div className="notification-message">
-                  {notification.message}
-                </div>
-                <div className="notification-meta">
-                  <span className="notification-type">
-                    {notification.type.replace('_', ' ').toUpperCase()}
-                  </span>
-                  <span className="notification-time">
-                    {formatTimestamp(notification.timestamp)}
-                  </span>
-                  {notification.shipment_id && (
-                    <span className="notification-id">
-                      Shipment: {notification.shipment_id}
-                    </span>
-                  )}
-                  {notification.truck_id && (
-                    <span className="notification-id">
-                      Truck: {notification.truck_id}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))
+            {getUnreadCount() > 99 ? '99+' : getUnreadCount()}
+          </span>
         )}
-      </div>
+      </button>
 
-      {notifications.length > 0 && (
-        <div className="notification-footer">
-          <small>{notifications.length} notification(s)</small>
+      {/* Expanded Notifications Panel */}
+      {isExpanded && (
+        <div
+          className="notification-dropdown"
+          style={{
+            position: 'absolute',
+            top: '100%',
+            right: '0',
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-lg)',
+            minWidth: '350px',
+            maxWidth: '450px',
+            maxHeight: '500px',
+            overflow: 'hidden',
+            zIndex: 1000,
+            marginTop: 'var(--space-2)'
+          }}
+        >
+          {/* Header */}
+          <div
+            style={{
+              padding: 'var(--space-4)',
+              borderBottom: '1px solid var(--color-border)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}
+          >
+            <h4
+              style={{
+                margin: 0,
+                fontSize: 'var(--text-lg)',
+                fontWeight: 'var(--weight-semibold)',
+                color: 'var(--color-text)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-2)'
+              }}
+            >
+              <Bell size={20} weight="regular" />
+              Notifications
+            </h4>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+              <span
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: isConnected ? 'var(--color-success)' : 'var(--color-danger)',
+                  fontWeight: 'var(--weight-medium)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-1)'
+                }}
+              >
+                {isConnected ? <CheckCircle size={12} weight="fill" /> : <XCircle size={12} weight="fill" />} 
+                {isConnected ? 'Live' : 'Offline'}
+              </span>
+              <button
+                onClick={clearNotifications}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: 'var(--space-1) var(--space-2)',
+                  fontSize: 'var(--text-xs)',
+                  cursor: 'pointer',
+                  color: 'var(--color-text-secondary)',
+                  transition: 'all var(--motion-duration) var(--motion-ease-standard)'
+                }}
+                disabled={notifications.length === 0}
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+
+          {/* Notifications List */}
+          <div
+            style={{
+              maxHeight: '400px',
+              overflowY: 'auto'
+            }}
+          >
+            {notifications.length === 0 ? (
+              <div
+                style={{
+                  padding: 'var(--space-6)',
+                  textAlign: 'center',
+                  color: 'var(--color-text-secondary)'
+                }}
+              >
+                <p style={{ margin: '0 0 var(--space-2) 0' }}>No notifications yet</p>
+                <small>Notifications from N8N workflows will appear here</small>
+              </div>
+            ) : (
+              notifications.map((notification, index) => (
+                <div
+                  key={index}
+                  style={{
+                    padding: 'var(--space-3) var(--space-4)',
+                    borderBottom: '1px solid var(--color-border)',
+                    borderLeft: `4px solid ${getSeverityColor(notification.severity)}`,
+                    background: index % 2 === 0 ? 'var(--color-surface)' : 'var(--color-surface-alt)'
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      minWidth: '20px'
+                    }}>
+                      {getSeverityIcon(notification.severity)}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: 'var(--text-sm)',
+                          fontWeight: 'var(--weight-medium)',
+                          marginBottom: 'var(--space-1)',
+                          color: 'var(--color-text)'
+                        }}
+                      >
+                        {notification.message}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 'var(--text-xs)',
+                          color: 'var(--color-text-secondary)',
+                          display: 'flex',
+                          gap: 'var(--space-2)',
+                          flexWrap: 'wrap'
+                        }}
+                      >
+                        <span style={{ textTransform: 'uppercase', fontWeight: 'var(--weight-medium)' }}>
+                          {notification.type.replace('_', ' ')}
+                        </span>
+                        <span>{formatTimestamp(notification.timestamp)}</span>
+                        {notification.shipment_id && (
+                          <span>Shipment: {notification.shipment_id}</span>
+                        )}
+                        {notification.truck_id && (
+                          <span>Truck: {notification.truck_id}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Footer */}
+          {notifications.length > 0 && (
+            <div
+              style={{
+                padding: 'var(--space-3) var(--space-4)',
+                borderTop: '1px solid var(--color-border)',
+                background: 'var(--color-surface-alt)',
+                textAlign: 'center',
+                fontSize: 'var(--text-xs)',
+                color: 'var(--color-text-secondary)'
+              }}
+            >
+              {notifications.length} notification(s)
+            </div>
+          )}
         </div>
       )}
     </div>

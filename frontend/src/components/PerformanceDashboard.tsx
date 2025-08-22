@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Monitor, ArrowsClockwise, Info, CheckCircle, Warning, ChartLine, Gauge, Gear } from '@phosphor-icons/react';
 import { config } from '../config';
 
 interface PerformanceMetrics {
@@ -116,9 +117,12 @@ export default function PerformanceDashboard() {
               color: 'white',
               padding: 'var(--space-1)',
               borderRadius: 'var(--radius-sm)',
-              fontSize: 'var(--text-xs)'
+              fontSize: 'var(--text-xs)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
-              🖥️
+              <Monitor size={16} weight="fill" />
             </div>
             <span style={{
               color: 'var(--color-text)',
@@ -173,9 +177,12 @@ export default function PerformanceDashboard() {
               color: 'white',
               padding: 'var(--space-1)',
               borderRadius: 'var(--radius-sm)',
-              fontSize: 'var(--text-xs)'
+              fontSize: 'var(--text-xs)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
-              💾
+              <Gauge size={16} weight="fill" />
             </div>
             <span style={{
               color: 'var(--color-text)',
@@ -287,9 +294,12 @@ export default function PerformanceDashboard() {
               color: 'white',
               padding: 'var(--space-1)',
               borderRadius: 'var(--radius-sm)',
-              fontSize: 'var(--text-xs)'
+              fontSize: 'var(--text-xs)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
-              🔄
+              <ArrowsClockwise size={16} weight="fill" />
             </div>
             <span style={{
               color: 'var(--color-text)',
@@ -348,9 +358,12 @@ export default function PerformanceDashboard() {
             color: 'white',
             padding: 'var(--space-1)',
             borderRadius: 'var(--radius-sm)',
-            fontSize: 'var(--text-xs)'
+            fontSize: 'var(--text-xs)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
-            ℹ️
+            <Info size={16} weight="fill" />
           </div>
           <h4 style={{
             color: 'var(--color-text)',
@@ -408,9 +421,12 @@ export default function PerformanceDashboard() {
             color: 'white',
             padding: 'var(--space-1)',
             borderRadius: 'var(--radius-sm)',
-            fontSize: 'var(--text-xs)'
+            fontSize: 'var(--text-xs)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
-            ✅
+            <CheckCircle size={16} weight="fill" />
           </div>
           <h4 style={{
             color: 'var(--color-text)',
@@ -463,9 +479,12 @@ export default function PerformanceDashboard() {
           color: 'white',
           padding: 'var(--space-1)',
           borderRadius: 'var(--radius-sm)',
-          fontSize: 'var(--text-xs)'
+          fontSize: 'var(--text-xs)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
-          🚨
+          <Warning size={16} weight="fill" />
         </div>
         <h4 style={{
           color: 'var(--color-text)',
@@ -635,7 +654,7 @@ export default function PerformanceDashboard() {
             gap: 'var(--space-2)',
             marginBottom: 'var(--space-2)'
           }}>
-            <span style={{ fontSize: 'var(--text-lg)' }}>⚠️</span>
+            <Warning size={20} weight="fill" />
             <span style={{ fontWeight: 'var(--weight-medium)' }}>Error</span>
           </div>
           {error}
@@ -685,11 +704,11 @@ export default function PerformanceDashboard() {
         paddingBottom: 'var(--space-2)'
       }}>
         {[
-          { key: 'overview', label: '📊 Overview' },
-          { key: 'metrics', label: '📈 Metrics' },
-          { key: 'alerts', label: '🚨 Alerts' },
-          { key: 'system', label: '⚙️ System' }
-        ].map(({ key, label }) => (
+          { key: 'overview', label: 'Overview', icon: <ChartLine size={18} weight="regular" /> },
+          { key: 'metrics', label: 'Metrics', icon: <Gauge size={18} weight="regular" /> },
+          { key: 'alerts', label: 'Alerts', icon: <Warning size={18} weight="regular" /> },
+          { key: 'system', label: 'System', icon: <Gear size={18} weight="regular" /> }
+        ].map(({ key, label, icon }) => (
           <button
             key={key}
             onClick={() => setActiveSection(key as any)}
@@ -704,9 +723,12 @@ export default function PerformanceDashboard() {
               fontWeight: 'var(--weight-medium)',
               transition: 'all 0.2s ease'
             }}
-          >
-            {label}
-          </button>
+                      >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                {icon}
+                {label}
+              </div>
+            </button>
         ))}
       </div>
 
