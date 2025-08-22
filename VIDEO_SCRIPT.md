@@ -41,7 +41,68 @@
 
 ---
 
-## **System Architecture Walkthrough (2:30 - 4:00)**
+## **Why N8N? The Automation Foundation (2:30 - 4:30)**
+*[Show N8N interface and explain the automation strategy]*
+
+**Narrator:** "Before we dive into the frontend, let me explain why N8N is the core of our automation strategy and how it transforms logistics operations."
+
+### **The Problem with Traditional Logistics:**
+- **Manual Monitoring:** Someone has to constantly check shipment statuses
+- **Reactive Responses:** Problems are discovered after they happen
+- **Human Error:** Missed alerts, forgotten maintenance, delayed notifications
+- **Scalability Issues:** More shipments = more manual work = more mistakes
+- **24/7 Operations:** Logistics never sleeps, but humans do
+
+### **Why N8N Solves These Problems:**
+
+#### **1. Visual Workflow Builder (No Coding Required)**
+- **Business Users Can Build:** Fleet managers create workflows without developers
+- **Visual Logic:** See the entire process flow at a glance
+- **Easy Modifications:** Change business rules without touching code
+- **Team Collaboration:** Multiple stakeholders can understand and modify workflows
+
+#### **2. Real-Time Automation**
+- **Database Triggers:** Automatically detect when shipments are delayed
+- **Scheduled Tasks:** Daily reports, maintenance reminders, performance summaries
+- **Event-Driven:** Respond to changes instantly, not when someone checks
+- **Multi-Channel Notifications:** Email, SMS, dashboard alerts, Slack integration
+
+#### **3. Integration Power**
+- **Database Connections:** Direct PostgreSQL integration for real-time monitoring
+- **API Integration:** Connect to external logistics services, weather APIs, traffic data
+- **Webhook Support:** Receive alerts from external systems
+- **Email/SMS:** Send notifications to drivers, customers, managers
+
+#### **4. Business Logic Without Code**
+- **Complex Rules:** "If shipment is delayed AND priority is high, notify manager AND customer"
+- **Conditional Logic:** Different actions based on shipment status, truck location, weather
+- **Escalation Paths:** Automatic escalation when issues aren't resolved
+- **Data Transformation:** Convert database data into readable notifications
+
+### **Real-World Examples:**
+
+#### **Example 1: Delivery Delay Detection**
+**Traditional Way:** Manager checks dashboard every hour, manually identifies delays
+**With N8N:** System automatically detects delays, sends immediate alerts, escalates if needed
+
+#### **Example 2: Maintenance Scheduling**
+**Traditional Way:** Paper calendar, manual reminders, forgotten maintenance
+**With N8N:** Automatic maintenance alerts, parts ordering, driver reassignment
+
+#### **Example 3: Daily Reporting**
+**Traditional Way:** Manager spends 2 hours compiling daily statistics
+**With N8N:** Report automatically generated and distributed at 6 AM daily
+
+### **Cost-Benefit Analysis:**
+- **Development Time:** Build complex automation in hours, not weeks
+- **Maintenance:** Business users modify workflows, no developer needed
+- **Reliability:** 24/7 operation, no human oversight required
+- **Scalability:** Handle 1000 shipments as easily as 10
+- **ROI:** Payback in weeks, not months
+
+---
+
+## **System Architecture Walkthrough (4:30 - 5:00)**
 *[Show architecture diagram and explain the flow]*
 
 **Narrator:** "SmartHaul follows a microservices architecture that separates concerns and ensures scalability."
@@ -62,12 +123,12 @@
 
 ---
 
-## **Frontend Dashboard Deep Dive (4:00 - 7:00)**
+## **Frontend Dashboard Deep Dive (5:00 - 8:00)**
 *[Navigate through each section of the dashboard]*
 
 **Narrator:** "Let's explore the frontend dashboard, which serves as the command center for all logistics operations."
 
-### **1. Dashboard Overview (4:00 - 4:45)**
+### **1. Dashboard Overview (5:00 - 5:45)**
 *[Show main dashboard with charts and statistics]*
 
 **Key Features:**
@@ -82,7 +143,7 @@
 - Real-time updates through WebSocket connections
 - Responsive design using CSS Grid and Flexbox
 
-### **2. Fleet Management (4:45 - 5:30)**
+### **2. Fleet Management (5:45 - 6:30)**
 *[Navigate to Fleet Management tab]*
 
 **Key Features:**
@@ -102,7 +163,7 @@
 - Maintenance tracking prevents breakdowns and delays
 - Real-time status updates improve operational efficiency
 
-### **3. Shipment Management (5:30 - 6:15)**
+### **3. Shipment Management (6:30 - 7:15)**
 *[Navigate to Shipments tab]*
 
 **Key Features:**
@@ -122,7 +183,7 @@
 - Automated document generation saves time
 - QR codes enable mobile tracking
 
-### **4. Workflow Management (6:15 - 6:45)**
+### **4. Workflow Management (7:15 - 7:45)**
 *[Navigate to Workflows tab]*
 
 **Key Features:**
@@ -135,7 +196,7 @@
 - Real-time status monitoring
 - Error reporting and logging
 
-### **5. System Administrative (6:45 - 7:00)**
+### **5. System Administrative (7:45 - 8:00)**
 *[Navigate to System Administrative tab]*
 
 **Key Features:**
@@ -145,7 +206,7 @@
 
 ---
 
-## **N8N Workflow Automation (7:00 - 9:00)**
+## **N8N Workflow Automation (8:00 - 10:00)**
 *[Show N8N workflows and explain automation benefits]*
 
 **Narrator:** "N8N is the heart of our automation strategy. Let me show you how it transforms manual processes into intelligent, automated workflows."
@@ -158,7 +219,7 @@
 
 ### **Key Workflows:**
 
-#### **1. Delivery Delay Detection (7:15 - 7:45)**
+#### **1. Delivery Delay Detection (8:15 - 8:45)**
 *[Show the workflow diagram]*
 
 **How It Works:**
@@ -173,7 +234,7 @@
 - Reduced customer complaints
 - Improved operational efficiency
 
-#### **2. Truck Maintenance Alerts (7:45 - 8:15)**
+#### **2. Truck Maintenance Alerts (8:45 - 9:15)**
 *[Show maintenance workflow]*
 
 **How It Works:**
@@ -187,7 +248,7 @@
 - Reduced breakdowns
 - Optimized fleet utilization
 
-#### **3. Daily Reporting (8:15 - 8:45)**
+#### **3. Daily Reporting (9:15 - 9:45)**
 *[Show daily report workflow]*
 
 **How It Works:**
@@ -209,7 +270,7 @@
 
 ---
 
-## **Backend API Deep Dive (9:00 - 10:30)**
+## **Backend API Deep Dive (10:00 - 11:30)**
 *[Show backend code and explain API design]*
 
 **Narrator:** "The backend API is the backbone of SmartHaul, handling all business logic and data operations."
@@ -222,7 +283,7 @@
 
 ### **Key Endpoints:**
 
-#### **1. Fleet Management API (9:15 - 9:45)**
+#### **1. Fleet Management API (10:15 - 10:45)**
 *[Show fleet API endpoints]*
 
 **Endpoints:**
@@ -237,7 +298,7 @@
 - Input validation using Pydantic models
 - Proper error handling and logging
 
-#### **2. Shipment Management API (9:45 - 10:15)**
+#### **2. Shipment Management API (10:45 - 11:15)**
 *[Show shipment API endpoints]*
 
 **Endpoints:**
@@ -252,7 +313,7 @@
 - Real-time status updates
 - Integration with notification system
 
-#### **3. PDF Generation API (10:15 - 10:30)**
+#### **3. PDF Generation API (11:15 - 11:30)**
 *[Show PDF generation endpoints]*
 
 **Endpoints:**
@@ -268,14 +329,14 @@
 
 ---
 
-## **Database Design and Implementation (10:30 - 11:30)**
+## **Database Design and Implementation (11:30 - 12:30)**
 *[Show database schema and explain design decisions]*
 
 **Narrator:** "The database design is crucial for performance and data integrity. Let me show you how SmartHaul's database is structured."
 
 ### **Database Schema:**
 
-#### **1. Core Tables (10:45 - 11:00)**
+#### **1. Core Tables (11:45 - 12:00)**
 *[Show database schema diagram]*
 
 **Users Table:**
@@ -293,7 +354,7 @@
 - `cargo_type`, `cargo_weight`, `cargo_volume`
 - `priority`, `eta`, `actual_delivery_time`
 
-#### **2. Relationship Design (11:00 - 11:15)**
+#### **2. Relationship Design (12:00 - 12:15)**
 *[Show entity relationships]*
 
 **Key Relationships:**
@@ -307,7 +368,7 @@
 - Foreign key constraints ensure data integrity
 - Indexed fields optimize query performance
 
-#### **3. Data Operations (11:15 - 11:30)**
+#### **3. Data Operations (12:15 - 12:30)**
 *[Show sample queries and operations]*
 
 **Common Operations:**
@@ -323,7 +384,7 @@
 
 ---
 
-## **Real-time Features and Notifications (11:30 - 12:00)**
+## **Real-time Features and Notifications (12:30 - 13:00)**
 *[Demonstrate real-time functionality]*
 
 **Narrator:** "SmartHaul's real-time capabilities ensure that users always have the latest information."
@@ -347,7 +408,7 @@
 
 ---
 
-## **Design System and UI/UX (12:00 - 12:30)**
+## **Design System and UI/UX (13:00 - 13:30)**
 *[Show design system and explain UI decisions]*
 
 **Narrator:** "A consistent design system is essential for professional applications. SmartHaul uses a comprehensive design system."
@@ -372,7 +433,7 @@
 
 ---
 
-## **Testing and Quality Assurance (12:30 - 13:00)**
+## **Testing and Quality Assurance (13:30 - 14:00)**
 *[Show testing approach and quality measures]*
 
 **Narrator:** "Quality is paramount in logistics systems. SmartHaul includes comprehensive testing and monitoring."
@@ -391,7 +452,7 @@
 
 ---
 
-## **Deployment and Operations (13:00 - 13:30)**
+## **Deployment and Operations (14:00 - 14:30)**
 *[Show deployment configuration and operational aspects]*
 
 **Narrator:** "SmartHaul is designed for production deployment with proper operational considerations."
@@ -410,7 +471,7 @@
 
 ---
 
-## **Business Value and ROI (13:30 - 14:00)**
+## **Business Value and ROI (14:30 - 15:00)**
 *[Discuss business benefits and return on investment]*
 
 **Narrator:** "Let me explain the business value that SmartHaul delivers to logistics operations."
@@ -435,7 +496,7 @@
 
 ---
 
-## **Future Roadmap and Enhancements (14:00 - 14:30)**
+## **Future Roadmap and Enhancements (15:00 - 15:30)**
 *[Discuss planned features and evolution]*
 
 **Narrator:** "SmartHaul is designed for continuous evolution. Let me outline the roadmap for future enhancements."
@@ -457,7 +518,7 @@
 
 ---
 
-## **Conclusion and Demo (14:30 - 15:00)**
+## **Conclusion and Demo (15:30 - 16:00)**
 *[Summarize and show live demo]*
 
 **Narrator:** "SmartHaul represents the future of logistics management. Let me show you a live demonstration of the system in action."
