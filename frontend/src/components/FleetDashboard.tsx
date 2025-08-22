@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, Plus, Wrench, GasPump, MapPin, User, Gauge, X } from '@phosphor-icons/react';
+import { Truck, Plus, Wrench, GasPump, MapPin, Gauge, X } from '@phosphor-icons/react';
 
 interface TruckData {
   id: number;

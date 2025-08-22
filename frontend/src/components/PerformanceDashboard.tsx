@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Monitor, ArrowsClockwise, Info, CheckCircle, Warning, ChartLine, Gauge, Gear } from '@phosphor-icons/react';
 import { config } from '../config';
 

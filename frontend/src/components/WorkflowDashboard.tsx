@@ -75,7 +75,7 @@ export const WorkflowDashboard: React.FC = () => {
   const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'shipments' | 'trucks' | 'users' | 'documents' | 'predictions' | 'workflows'>('shipments');
 
   useEffect(() => {

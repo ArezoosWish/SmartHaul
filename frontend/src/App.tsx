@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import './App.css'
 import { WorkflowDashboard } from './components/WorkflowDashboard'
-import PerformanceDashboard from './components/PerformanceDashboard'
 import SystemAdministrative from './components/SystemAdministrative'
 import NotificationPanel from './components/NotificationPanel'
 import DashboardCharts from './components/DashboardCharts'

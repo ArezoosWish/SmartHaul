@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Package, Plus, Truck, MapPin, Calendar, Weight, Cube, X, Check, Clock } from '@phosphor-icons/react';
+import { useState, useEffect } from 'react';
+import { Package, Plus, Truck, MapPin, X, Check, Clock } from '@phosphor-icons/react';
 
 interface ShipmentData {
   id: number;

@@ -16,16 +16,19 @@ class ShipmentBase(BaseModel):
     tracking_number: str = Field(..., description="Unique tracking number")
     origin: str = Field(..., description="Pickup location")
     destination: str = Field(..., description="Delivery location")
+    status: str = Field("pending", description="pending, assigned, in_transit, delivered, cancelled")
     priority: str = Field("normal", description="high, normal, low")
-    cargo_type: str = Field(..., description="Type of cargo")
-    cargo_weight: float = Field(..., description="Weight in pounds")
-    cargo_volume: float = Field(..., description="Volume in cubic feet")
+    cargo_type: Optional[str] = Field(None, description="Type of cargo")
+    cargo_weight: Optional[float] = Field(None, description="Weight in pounds")
+    cargo_volume: Optional[float] = Field(None, description="Volume in cubic feet")
     pickup_time: Optional[datetime] = Field(None, description="Scheduled pickup time")
     delivery_deadline: Optional[datetime] = Field(None, description="Delivery deadline")
 
 
 class ShipmentCreate(ShipmentBase):
-    pass
+    cargo_type: str = Field(..., description="Type of cargo")
+    cargo_weight: float = Field(..., description="Weight in pounds")
+    cargo_volume: float = Field(..., description="Volume in cubic feet")
 
 class ShipmentUpdate(ShipmentBase):
     status: Optional[str] = Field(None, description="pending, in_transit, delivered, cancelled")
@@ -48,6 +51,8 @@ class ShipmentResponse(ShipmentBase):
     
     class Config:
         from_attributes = True
+        # Allow None values for fields that might not exist in old data
+        extra = "ignore"
 
 class TruckAssignmentRequest(BaseModel):
     shipment_id: int
